@@ -1,0 +1,239 @@
+CREATE DATABASE IF NOT EXISTS sistema_viajes;
+USE sistema_viajes;
+
+-- 1. Usuarios
+CREATE TABLE Usuarios (
+    usuario_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100),
+    apellido VARCHAR(100),
+    email VARCHAR(150) UNIQUE,
+    telefono VARCHAR(50),
+    password_hash VARCHAR(255),
+    rol VARCHAR(50),
+    fecha_registro DATETIME,
+    activo BOOLEAN
+) ENGINE=InnoDB;
+
+-- 2. Conductores
+CREATE TABLE Conductores (
+    conductor_id INT PRIMARY KEY,
+    foto_perfil VARCHAR(255),
+    estado_verificacion VARCHAR(50),
+    FOREIGN KEY (conductor_id) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 3. Vehiculos
+CREATE TABLE Vehiculos (
+    vehiculo_id INT AUTO_INCREMENT PRIMARY KEY,
+    marca VARCHAR(100),
+    modelo VARCHAR(100),
+    anio INT,
+    placa VARCHAR(50) UNIQUE,
+    color VARCHAR(50),
+    capacidad INT,
+    estado VARCHAR(50)
+) ENGINE=InnoDB;
+
+-- 4. Solicitudes
+CREATE TABLE Solicitudes (
+    solicitud_id INT AUTO_INCREMENT PRIMARY KEY,
+    pasajero_id INT,
+    origen VARCHAR(255),
+    destino VARCHAR(255),
+    precio_recomendado FLOAT,
+    metodo_pago_preferido VARCHAR(50),
+    fecha_solicitud DATETIME,
+    estado VARCHAR(50),
+    FOREIGN KEY (pasajero_id) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 5. Notificaciones
+CREATE TABLE Notificaciones (
+    notificacion_id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    titulo VARCHAR(150),
+    mensaje TEXT,
+    tipo VARCHAR(50),
+    estado VARCHAR(50),
+    fecha_envio DATETIME,
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 6. Chat_soporte
+CREATE TABLE Chat_soporte (
+    chat_soporte_id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    categoria VARCHAR(100),
+    prioridad VARCHAR(50),
+    estado VARCHAR(50),
+    creado_en DATETIME,
+    actualizado_en DATETIME,
+    cerrado_en DATETIME,
+    asignado_a INT,
+    FOREIGN KEY (usuario_id) REFERENCES Usuarios(usuario_id),
+    FOREIGN KEY (asignado_a) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 7. Documentos_conductor
+CREATE TABLE Documentos_conductor (
+    documento_id INT AUTO_INCREMENT PRIMARY KEY,
+    conductor_id INT,
+    tipo_documento VARCHAR(100),
+    numero_documento VARCHAR(100),
+    archivo_url VARCHAR(255),
+    estado VARCHAR(50),
+    fecha_emision DATE,
+    fecha_vencimiento DATE,
+    fecha_subida DATETIME,
+    verificado_por INT,
+    fecha_verificacion DATETIME,
+    FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id),
+    FOREIGN KEY (verificado_por) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 8. Ofertas
+CREATE TABLE Ofertas (
+    oferta_id INT AUTO_INCREMENT PRIMARY KEY,
+    solicitud_id INT,
+    conductor_id INT,
+    precio_ofrecido FLOAT,
+    mensaje_opcional TEXT,
+    estado VARCHAR(50),
+    fecha_oferta DATETIME,
+    FOREIGN KEY (solicitud_id) REFERENCES Solicitudes(solicitud_id),
+    FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id)
+) ENGINE=InnoDB;
+
+-- 9. Conductor_Vehiculo
+CREATE TABLE Conductor_Vehiculo (
+    conductor_id INT,
+    vehiculo_id INT,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    PRIMARY KEY (conductor_id, vehiculo_id),
+    FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id),
+    FOREIGN KEY (vehiculo_id) REFERENCES Vehiculos(vehiculo_id)
+) ENGINE=InnoDB;
+
+-- 10. Viajes
+CREATE TABLE Viajes (
+    viaje_id INT AUTO_INCREMENT PRIMARY KEY,
+    solicitud_id INT,
+    conductor_id INT,
+    vehiculo_id INT,
+    precio_final FLOAT,
+    estado VARCHAR(50),
+    fecha_inicio DATETIME,
+    fecha_fin DATETIME,
+    ubicacion_inicio_real VARCHAR(255),
+    ubicacion_fin_real VARCHAR(255),
+    FOREIGN KEY (solicitud_id) REFERENCES Solicitudes(solicitud_id),
+    FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id),
+    FOREIGN KEY (vehiculo_id) REFERENCES Vehiculos(vehiculo_id)
+) ENGINE=InnoDB;
+
+-- 11. Pagos
+CREATE TABLE Pagos (
+    pago_id INT AUTO_INCREMENT PRIMARY KEY,
+    viaje_id INT,
+    monto FLOAT,
+    metodo_pago VARCHAR(50),
+    estado VARCHAR(50),
+    fecha_pago DATETIME,
+    FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id)
+) ENGINE=InnoDB;
+
+-- 12. Tracking
+CREATE TABLE Tracking (
+    tracking_id INT AUTO_INCREMENT PRIMARY KEY,
+    viaje_id INT,
+    conductor_id INT,
+    latitud FLOAT,
+    longitud FLOAT,
+    velocidad FLOAT,
+    timestamp DATETIME,
+    FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id),
+    FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id)
+) ENGINE=InnoDB;
+
+-- 13. Chat_viaje
+CREATE TABLE Chat_viaje (
+    chat_id INT AUTO_INCREMENT PRIMARY KEY,
+    viaje_id INT,
+    creado_en DATETIME,
+    FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id)
+) ENGINE=InnoDB;
+
+-- 14. Incidentes
+CREATE TABLE Incidentes (
+    incidente_id INT AUTO_INCREMENT PRIMARY KEY,
+    viaje_id INT,
+    reportante_id INT,
+    tipo VARCHAR(100),
+    descripcion TEXT,
+    prioridad VARCHAR(50),
+    severidad VARCHAR(50),
+    estado VARCHAR(50),
+    fecha_reporte DATETIME,
+    resuelto_por INT,
+    fecha_resolucion DATETIME,
+    FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id),
+    FOREIGN KEY (reportante_id) REFERENCES Usuarios(usuario_id),
+    FOREIGN KEY (resuelto_por) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 15. Mensajes_viaje
+CREATE TABLE Mensajes_viaje (
+    mensaje_id INT AUTO_INCREMENT PRIMARY KEY,
+    chat_id INT,
+    remitente_id INT,
+    contenido TEXT,
+    tipo VARCHAR(50),
+    enviado_en DATETIME,
+    leido BOOLEAN,
+    FOREIGN KEY (chat_id) REFERENCES Chat_viaje(chat_id),
+    FOREIGN KEY (remitente_id) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;
+
+-- 16. Calificaciones
+CREATE TABLE Calificaciones (
+    calificacion_id INT AUTO_INCREMENT PRIMARY KEY,
+    viaje_id INT,
+    pasajero_id INT,
+    conductor_id INT,
+    puntuacion INT,
+    comentario_texto TEXT,
+    fecha_creacion DATETIME,
+    FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id),
+    FOREIGN KEY (pasajero_id) REFERENCES Usuarios(usuario_id),
+    FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id)
+) ENGINE=InnoDB;
+
+-- 17. Resumen_viaje_opciones
+CREATE TABLE Resumen_viaje_opciones (
+    opcion_id INT AUTO_INCREMENT PRIMARY KEY,
+    descripcion VARCHAR(255),
+    tipo VARCHAR(50)
+) ENGINE=InnoDB;
+
+-- 18. Calificacion_resumen
+CREATE TABLE Calificacion_resumen (
+    calificacion_id INT,
+    opcion_id INT,
+    PRIMARY KEY (calificacion_id, opcion_id),
+    FOREIGN KEY (calificacion_id) REFERENCES Calificaciones(calificacion_id),
+    FOREIGN KEY (opcion_id) REFERENCES Resumen_viaje_opciones(opcion_id)
+) ENGINE=InnoDB;
+
+-- 19. Mensajes_soporte
+CREATE TABLE Mensajes_soporte (
+    mensaje_id INT AUTO_INCREMENT PRIMARY KEY,
+    chat_soporte_id INT,
+    remitente_id INT,
+    contenido TEXT,
+    tipo VARCHAR(50),
+    enviado_en DATETIME,
+    leido BOOLEAN,
+    FOREIGN KEY (chat_soporte_id) REFERENCES Chat_soporte(chat_soporte_id),
+    FOREIGN KEY (remitente_id) REFERENCES Usuarios(usuario_id)
+) ENGINE=InnoDB;

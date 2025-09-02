@@ -1,0 +1,238 @@
+-- CREACIÓN DE TABLAS EN ORACLE 
+
+-- 1. Usuarios
+CREATE TABLE Usuarios (
+    usuario_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre VARCHAR2(100),
+    apellido VARCHAR2(100),
+    email VARCHAR2(150) UNIQUE,
+    telefono VARCHAR2(50),
+    password_hash VARCHAR2(255),
+    rol VARCHAR2(50),
+    fecha_registro DATE,
+    activo NUMBER(1)
+);
+
+-- 2. Conductores
+CREATE TABLE Conductores (
+    conductor_id NUMBER PRIMARY KEY,
+    foto_perfil VARCHAR2(255),
+    estado_verificacion VARCHAR2(50),
+    CONSTRAINT fk_conductor_usuario FOREIGN KEY (conductor_id) REFERENCES Usuarios(usuario_id)
+);
+
+-- 3. Vehiculos
+CREATE TABLE Vehiculos (
+    vehiculo_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    marca VARCHAR2(100),
+    modelo VARCHAR2(100),
+    anio NUMBER(4),
+    placa VARCHAR2(50) UNIQUE,
+    color VARCHAR2(50),
+    capacidad NUMBER,
+    estado VARCHAR2(50)
+);
+
+-- 4. Solicitudes
+CREATE TABLE Solicitudes (
+    solicitud_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    pasajero_id NUMBER,
+    origen VARCHAR2(255),
+    destino VARCHAR2(255),
+    precio_recomendado FLOAT,
+    metodo_pago_preferido VARCHAR2(50),
+    fecha_solicitud DATE,
+    estado VARCHAR2(50),
+    CONSTRAINT fk_solicitud_pasajero FOREIGN KEY (pasajero_id) REFERENCES Usuarios(usuario_id)
+);
+
+-- 5. Notificaciones
+CREATE TABLE Notificaciones (
+    notificacion_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    usuario_id NUMBER,
+    titulo VARCHAR2(150),
+    mensaje CLOB,
+    tipo VARCHAR2(50),
+    estado VARCHAR2(50),
+    fecha_envio DATE,
+    CONSTRAINT fk_notificacion_usuario FOREIGN KEY (usuario_id) REFERENCES Usuarios(usuario_id)
+);
+
+-- 6. Chat_soporte
+CREATE TABLE Chat_soporte (
+    chat_soporte_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    usuario_id NUMBER,
+    categoria VARCHAR2(100),
+    prioridad VARCHAR2(50),
+    estado VARCHAR2(50),
+    creado_en DATE,
+    actualizado_en DATE,
+    cerrado_en DATE,
+    asignado_a NUMBER,
+    CONSTRAINT fk_chat_usuario FOREIGN KEY (usuario_id) REFERENCES Usuarios(usuario_id),
+    CONSTRAINT fk_chat_asignado FOREIGN KEY (asignado_a) REFERENCES Usuarios(usuario_id)
+);
+
+-- 7. Documentos_conductor
+CREATE TABLE Documentos_conductor (
+    documento_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    conductor_id NUMBER,
+    tipo_documento VARCHAR2(100),
+    numero_documento VARCHAR2(100),
+    archivo_url VARCHAR2(255),
+    estado VARCHAR2(50),
+    fecha_emision DATE,
+    fecha_vencimiento DATE,
+    fecha_subida DATE,
+    verificado_por NUMBER,
+    fecha_verificacion DATE,
+    CONSTRAINT fk_doc_conductor FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id),
+    CONSTRAINT fk_doc_verificador FOREIGN KEY (verificado_por) REFERENCES Usuarios(usuario_id)
+);
+
+-- 8. Ofertas
+CREATE TABLE Ofertas (
+    oferta_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    solicitud_id NUMBER,
+    conductor_id NUMBER,
+    precio_ofrecido FLOAT,
+    mensaje_opcional CLOB,
+    estado VARCHAR2(50),
+    fecha_oferta DATE,
+    CONSTRAINT fk_oferta_solicitud FOREIGN KEY (solicitud_id) REFERENCES Solicitudes(solicitud_id),
+    CONSTRAINT fk_oferta_conductor FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id)
+);
+
+-- 9. Conductor_Vehiculo
+CREATE TABLE Conductor_Vehiculo (
+    conductor_id NUMBER,
+    vehiculo_id NUMBER,
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    PRIMARY KEY (conductor_id, vehiculo_id),
+    CONSTRAINT fk_cv_conductor FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id),
+    CONSTRAINT fk_cv_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES Vehiculos(vehiculo_id)
+);
+
+-- 10. Viajes
+CREATE TABLE Viajes (
+    viaje_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    solicitud_id NUMBER,
+    conductor_id NUMBER,
+    vehiculo_id NUMBER,
+    precio_final FLOAT,
+    estado VARCHAR2(50),
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    ubicacion_inicio_real VARCHAR2(255),
+    ubicacion_fin_real VARCHAR2(255),
+    CONSTRAINT fk_viaje_solicitud FOREIGN KEY (solicitud_id) REFERENCES Solicitudes(solicitud_id),
+    CONSTRAINT fk_viaje_conductor FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id),
+    CONSTRAINT fk_viaje_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES Vehiculos(vehiculo_id)
+);
+
+-- 11. Pagos
+CREATE TABLE Pagos (
+    pago_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    viaje_id NUMBER,
+    monto FLOAT,
+    metodo_pago VARCHAR2(50),
+    estado VARCHAR2(50),
+    fecha_pago DATE,
+    CONSTRAINT fk_pago_viaje FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id)
+);
+
+-- 12. Tracking
+CREATE TABLE Tracking (
+    tracking_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    viaje_id NUMBER,
+    conductor_id NUMBER,
+    latitud FLOAT,
+    longitud FLOAT,
+    velocidad FLOAT,
+    timestamp DATE,
+    CONSTRAINT fk_tracking_viaje FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id),
+    CONSTRAINT fk_tracking_conductor FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id)
+);
+
+-- 13. Chat_viaje
+CREATE TABLE Chat_viaje (
+    chat_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    viaje_id NUMBER,
+    creado_en DATE,
+    CONSTRAINT fk_chatviaje FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id)
+);
+
+-- 14. Incidentes
+CREATE TABLE Incidentes (
+    incidente_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    viaje_id NUMBER,
+    reportante_id NUMBER,
+    tipo VARCHAR2(100),
+    descripcion CLOB,
+    prioridad VARCHAR2(50),
+    severidad VARCHAR2(50),
+    estado VARCHAR2(50),
+    fecha_reporte DATE,
+    resuelto_por NUMBER,
+    fecha_resolucion DATE,
+    CONSTRAINT fk_incidente_viaje FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id),
+    CONSTRAINT fk_incidente_reportante FOREIGN KEY (reportante_id) REFERENCES Usuarios(usuario_id),
+    CONSTRAINT fk_incidente_resuelto FOREIGN KEY (resuelto_por) REFERENCES Usuarios(usuario_id)
+);
+
+-- 15. Mensajes_viaje
+CREATE TABLE Mensajes_viaje (
+    mensaje_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    chat_id NUMBER,
+    remitente_id NUMBER,
+    contenido CLOB,
+    tipo VARCHAR2(50),
+    enviado_en DATE,
+    leido NUMBER(1),
+    CONSTRAINT fk_mensajeviaje_chat FOREIGN KEY (chat_id) REFERENCES Chat_viaje(chat_id),
+    CONSTRAINT fk_mensajeviaje_usuario FOREIGN KEY (remitente_id) REFERENCES Usuarios(usuario_id)
+);
+
+-- 16. Calificaciones
+CREATE TABLE Calificaciones (
+    calificacion_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    viaje_id NUMBER,
+    pasajero_id NUMBER,
+    conductor_id NUMBER,
+    puntuacion NUMBER(2),
+    comentario_texto CLOB,
+    fecha_creacion DATE,
+    CONSTRAINT fk_calificacion_viaje FOREIGN KEY (viaje_id) REFERENCES Viajes(viaje_id),
+    CONSTRAINT fk_calificacion_pasajero FOREIGN KEY (pasajero_id) REFERENCES Usuarios(usuario_id),
+    CONSTRAINT fk_calificacion_conductor FOREIGN KEY (conductor_id) REFERENCES Conductores(conductor_id)
+);
+
+-- 17. Resumen_viaje_opciones
+CREATE TABLE Resumen_viaje_opciones (
+    opcion_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    descripcion VARCHAR2(255),
+    tipo VARCHAR2(50)
+);
+
+-- 18. Calificacion_resumen
+CREATE TABLE Calificacion_resumen (
+    calificacion_id NUMBER,
+    opcion_id NUMBER,
+    PRIMARY KEY (calificacion_id, opcion_id),
+    CONSTRAINT fk_resumen_calificacion FOREIGN KEY (calificacion_id) REFERENCES Calificaciones(calificacion_id),
+    CONSTRAINT fk_resumen_opcion FOREIGN KEY (opcion_id) REFERENCES Resumen_viaje_opciones(opcion_id)
+);
+
+-- 19. Mensajes_soporte
+CREATE TABLE Mensajes_soporte (
+    mensaje_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    chat_soporte_id NUMBER,
+    remitente_id NUMBER,
+    contenido CLOB,
+    tipo VARCHAR2(50),
+    enviado_en DATE,
+    leido NUMBER(1),
+    CONSTRAINT fk_mensajes_soporte_chat FOREIGN KEY (chat_soporte_id) REFERENCES Chat_soporte(chat_soporte_id),
+    CONSTRAINT fk_mensajes_soporte_usuario FOREIGN KEY (remitente_id) REFERENCES Usuarios(usuario_id)
+);
