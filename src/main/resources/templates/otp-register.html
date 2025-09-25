@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Registro</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
+        .container {
+            max-width: 600px; margin: 30px auto; background: #fff;
+            padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 { color: #2d89ef; }
+        .otp {
+            font-size: 28px; font-weight: bold; color: #e53935;
+            padding: 10px 20px; border: 2px dashed #e53935; display: inline-block; border-radius: 6px;
+            margin: 20px 0;
+        }
+        p { color: #333; font-size: 15px; }
+        .footer { margin-top: 20px; font-size: 12px; color: #888; text-align: center; }
+        .footer img { margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>¡Bienvenido, {{nombre}}!</h2>
+    <p>Gracias por registrarte en nuestra aplicación. Para activar tu cuenta, utiliza el siguiente código OTP:</p>
+    <div class="otp">{{codigo}}</div>
+    <p>Este código expira en 5 minutos. Por favor no lo compartas con nadie.</p>
+    <div class="footer">
+        <!-- Aquí se insertará el logo embebido -->
+        <img src="cid:logoImage" alt="Logo" width="120"/>
+        <p>© 2025 Rutas Prime. Todos los derechos reservados.</p>
+    </div>
+</div>
+</body>
+</html>
