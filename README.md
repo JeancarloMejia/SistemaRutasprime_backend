@@ -1,101 +1,111 @@
 # 🌐 SistemaRutasprime Backend
 
-Este proyecto es el **backend** de un sistema de gestión de usuarios con autenticación, verificación vía OTP y recuperación de contraseñas.
-Construido con **Spring Boot 3.5.6**, **Java 17**, **Spring Security**, **JWT**, **Hibernate/JPA** y **MySQL**.
+Este proyecto es el **backend** del sistema **RutasPrime**, encargado de la gestión de usuarios, autenticación, verificación vía OTP y recuperación de contraseñas.  
 
+Construido con **Spring Boot 3.5.6**, **Java 17**, **Spring Security**, **JWT**, **Hibernate/JPA** y **MySQL**.  
 Incluye soporte de **notificaciones por correo** usando Gmail SMTP y **plantillas HTML** personalizadas.
 
 ---
 
 ## 📖 Tabla de Contenidos
 
-* [✨ Características](#-características)
-* [⚙️ Dependencias](#-dependencias)
-* [📂 Estructura del Proyecto](#-estructura-del-proyecto)
-* [🛠️ Configuración](#-configuración)
-* [▶️ Ejecución](#-ejecución)
-
-  * [Registro](#registro)
-  * [Verificación OTP](#verificación-otp)
-  * [Login](#login)
-  * [Perfil](#perfil)
-  * [Olvido y reseteo de contraseña](#olvido-y-reseteo-de-contraseña)
-* [📧 Flujo de Correos OTP](#-flujo-de-correos-otp)
-* [🗄️ Base de Datos](#-base-de-datos)
-* [🛡️ Seguridad](#-seguridad)
-* [💡 Notas finales](#-notas-finales)
+- [✨ Características](#-características)  
+- [⚙️ Dependencias](#-dependencias)  
+- [📂 Estructura del Proyecto](#-estructura-del-proyecto)  
+- [🛠️ Configuración](#-configuración)  
+- [▶️ Ejecución](#-ejecución)  
+- [📬 Test con Postman](#-test-con-postman)  
+- [🌱 Comandos Git básicos](#-comandos-git-básicos)  
+- [🗄️ Base de Datos](#-base-de-datos)  
+- [🛡️ Seguridad](#-seguridad)  
+- [💡 Notas finales](#-notas-finales)  
 
 ---
 
 ## ✨ Características
 
-* 🔑 **Registro y login** de usuarios.
-* 🔒 **Contraseñas encriptadas** con `BCryptPasswordEncoder`.
-* 📧 **OTP (One Time Password)** para validación y recuperación de contraseñas.
-* 📨 **Envío de correos HTML** con plantillas (`otp-register.html`, `otp-reset.html`).
-* 👤 **Perfil de usuario protegido** por JWT.
-* 🛡️ **Spring Security + Filtros JWT** para autenticación y autorización.
-* 🗄️ **JPA/Hibernate** para persistencia en base de datos MySQL.
+- 🔑 **Registro y login** de usuarios.  
+- 🔒 **Contraseñas encriptadas** con `BCryptPasswordEncoder`.  
+- 📧 **OTP (One Time Password)** para validación y recuperación de contraseñas.  
+- 📨 **Envío de correos HTML** con plantillas (`otp-register.html`, `otp-reset.html`, `welcome.html`).  
+- 👤 **Perfil de usuario protegido** por JWT.  
+- 🛡️ **Spring Security + Filtros JWT** para autenticación y autorización.  
+- 🗄️ **JPA/Hibernate** para persistencia en base de datos MySQL.  
 
 ---
 
 ## ⚙️ Dependencias
 
-Definidas en `pom.xml`:
+Definidas en `pom.xml`:  
 
-* **Spring Boot Starter Web** → Construcción de REST API
-* **Spring Boot Starter Data JPA** → Persistencia con Hibernate
-* **MySQL Connector** → Conexión a base de datos MySQL
-* **Spring Boot Starter Security** → Seguridad y autenticación
-* **JJWT (io.jsonwebtoken)** → Manejo de tokens JWT
-* **Spring Boot Starter Mail** → Envío de correos electrónicos
-* **Lombok** → Reducir boilerplate en clases Java
-* **Spring Boot Starter Test** → Pruebas unitarias
+- **Spring Boot Starter Web** → Construcción de REST API  
+- **Spring Boot Starter Data JPA** → Persistencia con Hibernate  
+- **MySQL Connector** → Conexión a base de datos MySQL  
+- **Spring Boot Starter Security** → Seguridad y autenticación  
+- **JJWT (io.jsonwebtoken)** → Manejo de tokens JWT  
+- **Spring Boot Starter Mail** → Envío de correos electrónicos  
+- **Lombok** → Reducir boilerplate en clases Java  
+- **Spring Boot Starter Test** → Pruebas unitarias  
 
 ---
 
 ## 📂 Estructura del Proyecto
 
-```
+```bash
 src/main/java/com/backend/avance1/
 ├── config/
-│   ├── CorsConfig.java
-│   └── SecurityConfig.java
+│   └── SecurityConfig.java                # Configuración de seguridad y CORS
 │
 ├── controller/
-│   ├── AuthController.java       # Endpoints de autenticación
-│   └── UserController.java       # Endpoint de perfil
+│   ├── AuthController.java                # Endpoints de autenticación (login, registro, OTP)
+│   └── UserController.java                # Endpoints de perfil de usuario
 │
-├── dto/
-│   └── (objetos de transferencia de datos)
+├── dto/                                   # Data Transfer Objects
+│   ├── ApiResponse.java
+│   ├── ChangePasswordDTO.java
+│   ├── ResetPasswordDTO.java
+│   ├── UpdateUserDTO.java
+│   └── UserDTO.java
 │
 ├── entity/
-│   ├── User.java                 # Entidad usuario
-│   └── Otp.java                  # Entidad OTP
+│   ├── Otp.java                           # Entidad OTP
+│   └── User.java                          # Entidad Usuario
+│
+├── exception/
+│   └── GlobalExceptionHandler.java        # Manejo global de excepciones
 │
 ├── repository/
-│   ├── UserRepository.java
-│   └── OtpRepository.java
+│   ├── OtpRepository.java
+│   └── UserRepository.java
 │
 ├── security/
-│   ├── JwtAuthFilter.java
-│   └── JwtUtil.java
+│   ├── JwtAuthEntryPoint.java             # Manejo de errores de autenticación
+│   ├── JwtAuthFilter.java                 # Filtro JWT para requests
+│   └── JwtUtil.java                       # Utilidades para JWT
 │
 ├── service/
-│   ├── UserService.java
-│   ├── OtpService.java
-│   └── MailService.java
+│   ├── MailService.java                   # Envío de correos con SMTP
+│   ├── OtpService.java                    # Lógica de OTP
+│   └── UserService.java                   # Lógica de negocio de usuarios
 │
 ├── util/
-│   └── Avance1Application.java
+│   └── Avance1Application.java            # Clase principal de Spring Boot
 │
 resources/
 ├── static/
-│   └── logo.jpg
-├── templates/
-│   ├── otp-register.html         # Correo de registro
-│   └── otp-reset.html            # Correo de recuperación
-└── application.properties
+│   └── logo.jpg                           # Logo estático usado en correos o frontend
+│
+├── templates/                             # Plantillas HTML para correos
+│   ├── otp-register.html                  # Correo de verificación OTP
+│   ├── otp-reset.html                     # Correo de recuperación OTP
+│   ├── password-changed.html              # Notificación de cambio de contraseña
+│   ├── profile-updated.html               # Notificación de actualización de perfil
+│   └── welcome.html                       # Correo de bienvenida
+│
+├── application.properties                 # Configuración de la app
+└── data.sql                               # Datos iniciales para la BD (opcional)
+
+test/                                      # Pruebas unitarias (vacío o en construcción)
 ```
 
 ---
@@ -103,11 +113,16 @@ resources/
 ## 🛠️ Configuración
 
 ### 1. Base de datos
+Crea una base de datos vacía, por ejemplo:  
 
-Crea una base de datos vacía (ejemplo: `rutasprime_db`).
-👉 No necesitas crear tablas: **Hibernate las generará automáticamente**.
+```sql
+CREATE DATABASE rutasprime_db;
+```
+
+👉 No es necesario crear tablas: **Hibernate las generará automáticamente**.  
 
 ### 2. Archivo `application.properties`
+Configura tus credenciales de MySQL y correo en:
 
 ```properties
 # Database
@@ -129,7 +144,7 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 server.port=8080
 ```
 
-⚠️ Usa una **App Password** de Google, no tu contraseña normal.
+⚠️ Usa una **App Password de Google** (no tu contraseña normal).
 
 ---
 
@@ -141,8 +156,79 @@ Con Maven:
 mvn spring-boot:run
 ```
 
-El servidor estará disponible en:
+El backend quedará disponible en:  
+👉 [http://localhost:8080](http://localhost:8080)
 
+---
+
+## 📬 Test con Postman
+
+En el proyecto se incluye el archivo **`RutasPrime.postman_collection.json`**, el cual contiene **todos los endpoints del sistema** listos para probar.  
+
+### Cómo usarlo:
+1. Abre **Postman**.  
+2. Ve a **Importar** y selecciona `RutasPrime.postman_collection.json`.  
+3. Podrás probar de forma rápida:
+   - Registro de usuario  
+   - Login  
+   - Verificación OTP  
+   - Recuperación de contraseña  
+   - Perfil protegido con JWT  
+
+---
+
+## 🌱 Comandos Git básicos
+
+### Clonar el proyecto
+```bash
+git clone https://github.com/JeancarloMejia/SistemaRutasprime_backend.git
+cd SistemaRutasprime_backend
 ```
-http://localhost:8080
+
+### Crear una nueva rama
+```bash
+git checkout -b mi-rama
 ```
+
+### Guardar cambios
+```bash
+git add .
+git commit -m "Descripción de los cambios"
+```
+
+### Subir tu rama al remoto
+```bash
+git push origin mi-rama
+```
+
+### Unir ramas (merge)
+Primero cambia a la rama principal:
+```bash
+git checkout main
+git pull origin main
+git merge mi-rama
+git push origin main
+```
+
+---
+
+## 🗄️ Base de Datos
+- Motor: **MySQL**  
+- ORM: **Hibernate / JPA**  
+- Estrategia: `ddl-auto=update` para generar tablas automáticamente.  
+
+---
+
+## 🛡️ Seguridad
+- Autenticación basada en **JWT**.  
+- Contraseñas protegidas con **BCrypt**.  
+- Filtros de seguridad con **Spring Security**.  
+- Control de acceso por roles.  
+
+---
+
+## 💡 Notas finales
+- El backend está diseñado para integrarse directamente con el **frontend de RutasPrime**.  
+- Para continuar con la interfaz de usuario, revisa el repo del frontend aquí:  
+
+👉 [🌐 SistemaRutasprime Frontend](https://github.com/P1erosebas8/SistemaRutasprime_frontend)
