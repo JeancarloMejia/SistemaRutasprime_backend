@@ -15,31 +15,24 @@ import java.io.IOException;
 public class MailService {
     private final JavaMailSender mailSender;
 
-    
     public void enviarCorreoHtml(String para, String asunto, String templateName, String nombre, String codigo)
             throws MessagingException, IOException {
 
-        
         String htmlContent = new String(
                 new ClassPathResource("templates/" + templateName)
                         .getInputStream()
                         .readAllBytes()
         );
 
-      
-        htmlContent = htmlContent.replace("{{nombre}}", nombre);
-        htmlContent = htmlContent.replace("{{codigo}}", codigo);
+        htmlContent = htmlContent.replace("{{nombre}}", nombre != null ? nombre : "");
+        htmlContent = htmlContent.replace("{{codigo}}", codigo != null ? codigo : "");
 
-       
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
         helper.setTo(para);
         helper.setSubject(asunto);
-
-        
         helper.setText(htmlContent, true);
 
-        
         helper.addInline("logoImage", new ClassPathResource("static/logo.jpg"));
 
         mailSender.send(mimeMessage);
