@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Rutas Prime API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "8e234f8b-b12e-4e0d-9abc-df4e9a2a77a9"
+  },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": { "raw": "http://localhost:8080/api/auth/register", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","register"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombres\": \"Juan\",\n  \"apellidos\": \"Pérez\",\n  \"celular\": \"987654321\",\n  \"email\": \"juan@example.com\",\n  \"direccion\": \"Av. Lima 123\",\n  \"dniRuc\": \"12345678\",\n  \"password\": \"123456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Verify OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/api/auth/verify-otp", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","verify-otp"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"codigo\": \"123456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"password\": \"123456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Forgot Password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/api/auth/forgot-password", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","forgot-password"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Reset Password",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/api/auth/reset-password", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","reset-password"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"codigo\": \"123456\",\n  \"nuevaPassword\": \"nuevaClave123\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Reset OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "http://localhost:8080/api/auth/reset-otp", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","reset-otp"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"type\": \"register\"\n}"
+        }
+      }
+    },
+    {
+      "name": "User - Get Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "http://localhost:8080/api/user/profile", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","user","profile"] }
+      }
+    },
+    {
+      "name": "User - Update Profile",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "http://localhost:8080/api/user/update", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","user","update"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombres\": \"Juan Carlos\",\n  \"apellidos\": \"Ramírez\",\n  \"direccion\": \"Calle Nueva 456\"\n}"
+        }
+      }
+    },
+    {
+      "name": "User - Change Password",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "http://localhost:8080/api/user/change-password", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","user","change-password"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"oldPassword\": \"123456\",\n  \"newPassword\": \"nuevaClave123\"\n}"
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}
