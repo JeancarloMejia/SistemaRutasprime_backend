@@ -22,6 +22,7 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtAuthEntryPoint jwtAuthEntryPoint;
 
@@ -31,7 +32,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/contact",
+                                "/api/contact/reply",
+                                "/api/contact/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint))
