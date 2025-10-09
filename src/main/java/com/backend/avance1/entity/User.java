@@ -2,7 +2,6 @@ package com.backend.avance1.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity

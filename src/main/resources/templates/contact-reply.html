@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Respuesta de Rutas Prime</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f6fa;
+            color: #333;
+            padding: 30px;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 650px;
+            margin: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #007bff;
+            font-size: 22px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .code {
+            background-color: #eafaf1;
+            color: #1a7f5b;
+            font-weight: bold;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .content {
+            font-size: 16px;
+            margin-top: 25px;
+            text-align: left;
+        }
+        .message {
+            background-color: #f1f9ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .support-button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 25px;
+            background-color: #2a9d8f;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .support-button:hover {
+            background-color: #248b7f;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+            font-size: 12px;
+            color: #888;
+        }
+        .footer img {
+            display: block;
+            margin: 10px auto 0;
+            width: 110px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Respuesta de Rutas Prime</h1>
+    <p class="code">Código: [[${code}]]</p>
+
+    <div class="content">
+        <p><span class="label">Fecha de respuesta:</span> [[${date}]]</p>
+        <p>Hola [[${name}]],</p>
+        <p>Gracias por comunicarte con nosotros. A continuación te dejamos nuestra respuesta:</p>
+
+        <div class="message">
+            <p>[[${replyMessage}]]</p>
+        </div>
+
+        <p>Si necesitas más información o deseas continuar esta conversación, puedes responder directamente a este correo.</p>
+
+        <a class="support-button" href="https://www.rutasprime.com" target="_blank">
+            Visitar sitio web
+        </a>
+    </div>
+
+    <div class="footer">
+        &copy; 2025 Rutas Prime. Todos los derechos reservados.
+        <img src="cid:logoImage" alt="Logo Rutas Prime">
+    </div>
+</div>
+</body>
+</html>
