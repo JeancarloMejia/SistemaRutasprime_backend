@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface OtpRepository extends JpaRepository<Otp, Long> {
     List<Otp> findByEmailAndUsadoFalse(String email);
+    void deleteByEmail(String email);
 }

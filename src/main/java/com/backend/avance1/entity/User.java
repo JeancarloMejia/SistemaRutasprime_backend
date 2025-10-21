@@ -3,6 +3,8 @@ package com.backend.avance1.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -34,4 +36,18 @@ public class User {
     private boolean activo = false;
 
     private LocalDateTime fechaRegistro = LocalDateTime.now();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "role")
+    @Builder.Default
+    private Set<RoleName> roles = new HashSet<>();
+
+    public boolean hasRole(RoleName roleName) {
+        return roles.contains(roleName);
+    }
 }

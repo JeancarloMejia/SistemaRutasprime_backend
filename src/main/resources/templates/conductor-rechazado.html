@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitud Rechazada - {{codigo}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: #ffffff;
+            max-width: 650px;
+            margin: 0 auto;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .highlight {
+            background-color: #fdeaea;
+            border-left: 5px solid #dc3545;
+            padding: 10px 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .info {
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            font-size: 12px;
+            color: #888;
+        }
+        .logo {
+            width: 120px;
+            margin-top: 10px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e2e2e2;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Solicitud Rechazada</h2>
+
+    <p>Hola <strong>{{nombre}}</strong>,</p>
+
+    <p>Lamentamos informarte que tu solicitud para ser conductor ha sido <strong>rechazada</strong> tras la revisión del equipo administrativo.</p>
+
+    <div class="highlight">
+        <p><strong>Código de Solicitud:</strong> {{codigo}}</p>
+        <p><strong>Estado:</strong> {{estado}}</p>
+        <p><strong>Fecha de Revisión:</strong> {{fechaVerificacion}}</p>
+    </div>
+
+    <hr>
+    <p class="info"><strong>Motivo u observación del administrador:</strong><br>
+        {{observacion}}
+    </p>
+
+    <p>Te invitamos a revisar los requisitos y volver a intentarlo en otro momento.</p>
+
+    <div class="footer">
+        <p>Atentamente,<br><strong>Equipo Rutas Prime</strong></p>
+        <img src="cid:logoImage" alt="Rutas Prime Logo" class="logo">
+    </div>
+</div>
+</body>
+</html>

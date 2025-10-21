@@ -18,7 +18,7 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
 
-        ApiResponse apiResponse = new ApiResponse(false, "Token inválido o no proporcionado", null);
+        ApiResponse apiResponse = new ApiResponse(false, "Acceso denegado: token inválido o no proporcionado", null);
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

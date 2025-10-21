@@ -3,6 +3,7 @@ package com.backend.avance1.controller;
 import com.backend.avance1.dto.ApiResponse;
 import com.backend.avance1.dto.ResetPasswordDTO;
 import com.backend.avance1.dto.UserDTO;
+import com.backend.avance1.entity.RoleName;
 import com.backend.avance1.entity.User;
 import com.backend.avance1.security.JwtUtil;
 import com.backend.avance1.service.MailService;
@@ -18,9 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth/public")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthPublicController {
 
     private final UserService userService;
     private final OtpService otpService;
@@ -40,6 +41,9 @@ public class AuthController {
                 .password(userDto.getPassword())
                 .build();
 
+        user.getRoles().add(RoleName.ROLE_CLIENTE);
+        user.setActivo(false);
+
         User nuevo = userService.registrar(user);
         String codigo = otpService.generarOtp(nuevo.getEmail());
 
@@ -55,7 +59,9 @@ public class AuthController {
             throw new RuntimeException("Error al enviar correo de confirmación", e);
         }
 
-        return ResponseEntity.ok(new ApiResponse(true, "Usuario registrado. Verifique su correo."));
+        return ResponseEntity.ok(
+                new ApiResponse(true, "Usuario registrado.Verifique su correo electrónico.")
+        );
     }
 
     @PostMapping("/verify-otp")
@@ -78,23 +84,36 @@ public class AuthController {
                         } catch (Exception e) {
                             throw new RuntimeException("Error al enviar correo de bienvenida", e);
                         }
-                        return ResponseEntity.ok(new ApiResponse(true, "Usuario activado"));
+                        return ResponseEntity.ok(new ApiResponse(true, "Usuario activado correctamente"));
                     })
                     .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(new ApiResponse(false, "Usuario no encontrado")));
         }
+
         return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, "OTP inválido o expirado"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody Map<String, String> body) {
-        return userService.buscarPorEmail(body.get("email"))
+        String email = body.get("email");
+        String password = body.get("password");
+
+        return userService.buscarPorEmail(email)
                 .filter(User::isActivo)
-                .filter(u -> passwordEncoder.matches(body.get("password"), u.getPassword()))
+                .filter(u -> (
+                        u.hasRole(RoleName.ROLE_CLIENTE) ||
+                                u.hasRole(RoleName.ROLE_CONDUCTOR)
+                ))
+                .filter(u -> passwordEncoder.matches(password, u.getPassword()))
                 .map(u -> {
-                    String token = jwtUtil.generateToken(u.getEmail());
-                    return ResponseEntity.ok(new ApiResponse(true, "Login exitoso", Map.of("token", token)));
+                    String token = jwtUtil.generateToken(u);
+                    return ResponseEntity.ok(
+                            new ApiResponse(true, "Login exitoso", Map.of(
+                                    "token", token,
+                                    "roles", u.getRoles()
+                            ))
+                    );
                 })
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new ApiResponse(false, "Credenciales inválidas")));
@@ -126,7 +145,6 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
-
         if (!dto.getNuevaPassword().equals(dto.getConfirmPassword())) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, "Las contraseñas no coinciden"));
@@ -150,20 +168,7 @@ public class AuthController {
                     }
 
                     userService.actualizarPassword(u, dto.getNuevaPassword());
-
-                    try {
-                        mailService.enviarCorreoHtml(
-                                u.getEmail(),
-                                "Tu contraseña ha sido cambiada",
-                                "password-changed.html",
-                                u.getNombres(),
-                                ""
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error al enviar correo de confirmación de cambio de contraseña", e);
-                    }
-
-                    return ResponseEntity.ok(new ApiResponse(true, "Contraseña actualizada"));
+                    return ResponseEntity.ok(new ApiResponse(true, "Contraseña actualizada correctamente"));
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ApiResponse(false, "Usuario no encontrado")));
@@ -177,13 +182,8 @@ public class AuthController {
         return userService.buscarPorEmail(email)
                 .map(user -> {
                     String codigo = otpService.generarOtp(email);
-
                     try {
                         if ("register".equalsIgnoreCase(type)) {
-                            if (user.isActivo()) {
-                                return ResponseEntity.badRequest()
-                                        .body(new ApiResponse(false, "El usuario ya está activo"));
-                            }
                             mailService.enviarCorreoHtml(
                                     email,
                                     "Reenvío OTP - Registro",
@@ -195,10 +195,6 @@ public class AuthController {
                         }
 
                         if ("forgot-password".equalsIgnoreCase(type)) {
-                            if (!user.isActivo()) {
-                                return ResponseEntity.badRequest()
-                                        .body(new ApiResponse(false, "El usuario aún no ha activado su cuenta"));
-                            }
                             mailService.enviarCorreoHtml(
                                     email,
                                     "Reenvío OTP - Recuperación de contraseña",
@@ -211,7 +207,6 @@ public class AuthController {
 
                         return ResponseEntity.badRequest()
                                 .body(new ApiResponse(false, "Tipo de OTP no válido"));
-
                     } catch (Exception e) {
                         throw new RuntimeException("Error al enviar correo", e);
                     }
