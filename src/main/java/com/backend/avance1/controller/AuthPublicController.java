@@ -6,15 +6,14 @@ import com.backend.avance1.dto.UserDTO;
 import com.backend.avance1.entity.RoleName;
 import com.backend.avance1.entity.User;
 import com.backend.avance1.security.JwtUtil;
-import com.backend.avance1.service.MailService;
-import com.backend.avance1.service.OtpService;
-import com.backend.avance1.service.UserService;
+import com.backend.avance1.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import com.backend.avance1.utils.TextFormatUtil;
 
 import java.util.Map;
 
@@ -28,9 +27,26 @@ public class AuthPublicController {
     private final MailService mailService;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final DniValidatorService dniValidatorService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody UserDTO userDto) {
+        try {
+            boolean coincide = dniValidatorService.validarDatosReniec(userDto);
+            if (!coincide) {
+                return ResponseEntity.badRequest().body(
+                        new ApiResponse(false, "Datos no coinciden con RENIEC")
+                );
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse(false, e.getMessage()));
+        }
+
+        userDto.setNombres(TextFormatUtil.capitalizarTexto(userDto.getNombres()));
+        userDto.setApellidos(TextFormatUtil.capitalizarTexto(userDto.getApellidos()));
+        userDto.setDireccion(TextFormatUtil.capitalizarDireccion(userDto.getDireccion()));
+
         User user = User.builder()
                 .nombres(userDto.getNombres())
                 .apellidos(userDto.getApellidos())
@@ -60,7 +76,7 @@ public class AuthPublicController {
         }
 
         return ResponseEntity.ok(
-                new ApiResponse(true, "Usuario registrado.Verifique su correo electrónico.")
+                new ApiResponse(true, "Usuario registrado. Verifique su correo electrónico")
         );
     }
 
