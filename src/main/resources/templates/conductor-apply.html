@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitud de Conductor - {{codigo}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #0078D7, #00AEEF);
+            color: white;
+            text-align: center;
+            padding: 25px 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .header p {
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 25px 30px;
+            line-height: 1.6;
+        }
+
+        h3 {
+            color: #0078D7;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            border-left: 4px solid #00AEEF;
+            padding-left: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8f9fc;
+            width: 40%;
+            color: #0078D7;
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .code-box {
+            background-color: #f0f8ff;
+            border: 1px solid #0078D7;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0078D7;
+            margin: 15px 0;
+        }
+
+        .highlight {
+            background-color: #fef9e7;
+            border-left: 5px solid #f1c40f;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .logo {
+            width: 110px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Nueva Solicitud de Conductor</h2>
+        <p>Área de Verificación - Rutas Prime</p>
+    </div>
+
+    <div class="content">
+        <p>Se ha recibido una nueva solicitud de conductor para revisión.</p>
+        <p><strong>Código de Solicitud:</strong></p>
+
+        <div class="code-box">
+            {{codigo}}
+        </div>
+
+        <h3>Datos del Solicitante</h3>
+        <table>
+            <tr><th>Nombre completo</th><td>{{nombre}}</td></tr>
+            <tr><th>Email</th><td>{{email}}</td></tr>
+            <tr><th>Celular</th><td>{{celular}}</td></tr>
+            <tr><th>Dirección</th><td>{{direccion}}</td></tr>
+            <tr><th>DNI / RUC</th><td>{{dni}}</td></tr>
+            <tr><th>Fecha de Nacimiento</th><td>{{fechaNacimiento}}</td></tr>
+            <tr><th>N° Licencia</th><td>{{licencia}}</td></tr>
+        </table>
+
+        <h3>Datos del Vehículo</h3>
+        <table>
+            <tr><th>Placa</th><td>{{placa}}</td></tr>
+            <tr><th>Marca</th><td>{{marca}}</td></tr>
+            <tr><th>Color</th><td>{{color}}</td></tr>
+            <tr><th>Año de Fabricación</th><td>{{anio}}</td></tr>
+        </table>
+
+        <div class="highlight">
+            Se adjuntan todos los documentos enviados por el cliente (licencia, antecedentes, SOAT, revisión técnica, etc.) para su verificación.
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Este mensaje fue generado automáticamente por el sistema <strong>Rutas Prime</strong>.</p>
+        <img src="cid:logoImage" alt="Rutas Prime Logo" class="logo">
+    </div>
+</div>
+</body>
+</html>

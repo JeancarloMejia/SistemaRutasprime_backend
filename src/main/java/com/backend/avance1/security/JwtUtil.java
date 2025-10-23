@@ -1,12 +1,14 @@
 package com.backend.avance1.security;
 
+import com.backend.avance1.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
@@ -21,9 +23,16 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(String email) {
+    public String generateToken(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", user.getRoles()
+                .stream()
+                .map(Enum::name)
+                .collect(Collectors.toList()));
+
         return Jwts.builder()
-                .setSubject(email)
+                .setClaims(claims)
+                .setSubject(user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -31,12 +40,18 @@ public class JwtUtil {
     }
 
     public String extractUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return extractAllClaims(token).getSubject();
+    }
+
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        Object roles = claims.get("roles");
+        if (roles instanceof List<?> list) {
+            return list.stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+        return Collections.emptyList();
     }
 
     public boolean isTokenValid(String token, String email) {
@@ -44,12 +59,14 @@ public class JwtUtil {
     }
 
     private boolean isTokenExpired(String token) {
-        Date expirationDate = Jwts.parserBuilder()
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expirationDate.before(new Date());
+                .getBody();
     }
 }

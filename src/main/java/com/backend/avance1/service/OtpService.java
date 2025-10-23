@@ -12,7 +12,7 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-public class OtpService {
+public class OtpService implements OtpServiceInterface {
     private final OtpRepository otpRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
