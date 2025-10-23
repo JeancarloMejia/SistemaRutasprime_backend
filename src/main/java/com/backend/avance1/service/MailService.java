@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class MailService {
+public class MailService implements MailServiceInterface {
 
     private final JavaMailSender mailSender;
 

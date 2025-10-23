@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.logging.Logger;
 
 @Service
-public class FileStorageService {
+public class FileStorageService implements FileStorageServiceInterface {
 
     private static final Logger LOGGER = Logger.getLogger(FileStorageService.class.getName());
 

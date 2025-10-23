@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ContactService {
+public class ContactService implements ContactServiceInterface {
 
     private final JavaMailSender mailSender;
     private final ContactRepository contactRepository;

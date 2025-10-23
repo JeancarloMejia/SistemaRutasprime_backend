@@ -19,7 +19,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class ConductorInfoService {
+public class ConductorInfoService implements ConductorInfoServiceInterface {
 
     private final ConductorInfoRepository conductorInfoRepository;
     private final UserRepository userRepository;
