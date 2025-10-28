@@ -1,42 +1,40 @@
 package com.backend.avance1.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class TextFormatUtil {
 
+    private static final String DIGITOS = "0123456789";
+
     public static String capitalizarTexto(String texto) {
-        if (texto == null || texto.trim().isEmpty()) {
+        if (StringUtils.isBlank(texto)) {
             return texto;
         }
 
-        texto = texto.toLowerCase().trim();
+        texto = StringUtils.normalizeSpace(texto.toLowerCase());
+        String[] palabras = StringUtils.split(texto, ' ');
 
-        StringBuilder resultado = new StringBuilder();
-        for (String palabra : texto.split("\\s+")) {
-            if (!palabra.isEmpty()) {
-                resultado.append(Character.toUpperCase(palabra.charAt(0)))
-                        .append(palabra.substring(1))
-                        .append(" ");
-            }
+        for (int i = 0; i < palabras.length; i++) {
+            palabras[i] = StringUtils.capitalize(palabras[i]);
         }
-        return resultado.toString().trim();
+
+        return String.join(" ", palabras);
     }
 
     public static String capitalizarDireccion(String direccion) {
-        if (direccion == null || direccion.trim().isEmpty()) {
+        if (StringUtils.isBlank(direccion)) {
             return direccion;
         }
 
-        direccion = direccion.toLowerCase().trim();
+        direccion = StringUtils.normalizeSpace(direccion.toLowerCase());
+        String[] palabras = StringUtils.split(direccion, ' ');
 
-        StringBuilder resultado = new StringBuilder();
-        for (String palabra : direccion.split("\\s+")) {
-            if (palabra.matches(".*\\d.*")) {
-                resultado.append(palabra).append(" ");
-            } else {
-                resultado.append(Character.toUpperCase(palabra.charAt(0)))
-                        .append(palabra.substring(1))
-                        .append(" ");
+        for (int i = 0; i < palabras.length; i++) {
+            if (!StringUtils.containsAny(palabras[i], DIGITOS)) {
+                palabras[i] = StringUtils.capitalize(palabras[i]);
             }
         }
-        return resultado.toString().trim();
+
+        return String.join(" ", palabras);
     }
 }

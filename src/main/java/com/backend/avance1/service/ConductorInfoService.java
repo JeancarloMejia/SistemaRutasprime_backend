@@ -154,6 +154,15 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
         return ConductorInfoResponseDTO.fromEntity(info);
     }
 
+    public ConductorInfoResponseDTO obtenerEstadoPorEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+
+        Optional<ConductorInfo> infoOpt = conductorInfoRepository.findByUser(user);
+
+        return infoOpt.map(ConductorInfoResponseDTO::fromEntity).orElse(null);
+    }
+
     private Map<String, Object> crearVariablesCorreo(User user, ConductorInfoDTO dto, String dni, String codigo) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("codigo", codigo);

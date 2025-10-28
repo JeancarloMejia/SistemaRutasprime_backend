@@ -8,9 +8,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 @Service
 @RequiredArgsConstructor
@@ -20,27 +23,28 @@ public class UserService implements UserServiceInterface {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public User registrar(User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("El correo ya está registrado.");
-        }
-        if (userRepository.findByCelular(user.getCelular()).isPresent()) {
-            throw new RuntimeException("El celular ya está registrado.");
-        }
-        if (userRepository.findByDniRuc(user.getDniRuc()).isPresent()) {
-            throw new RuntimeException("El DNI/RUC ya está registrado.");
-        }
+        Preconditions.checkNotNull(user, "El usuario no puede ser nulo");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(user.getEmail()), "El email es obligatorio");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(user.getPassword()), "La contraseña es obligatoria");
+
+        userRepository.findByEmail(user.getEmail())
+                .ifPresent(u -> { throw new RuntimeException("El correo ya está registrado."); });
+
+        userRepository.findByCelular(user.getCelular())
+                .ifPresent(u -> { throw new RuntimeException("El celular ya está registrado."); });
+
+        userRepository.findByDniRuc(user.getDniRuc())
+                .ifPresent(u -> { throw new RuntimeException("El DNI/RUC ya está registrado."); });
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setFechaRegistro(LocalDateTime.now());
 
         Set<RoleName> roles = user.getRoles();
-        if (roles == null) {
-            roles = new HashSet<>();
+        if (roles == null || roles.isEmpty()) {
+            roles = Sets.newHashSet(RoleName.ROLE_CLIENTE);
         }
 
-        roles.add(RoleName.ROLE_CLIENTE);
         user.setRoles(roles);
-
         return userRepository.save(user);
     }
 
@@ -48,13 +52,9 @@ public class UserService implements UserServiceInterface {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (!user.isActivo()) {
-            throw new RuntimeException("El usuario debe tener la cuenta activa para ser promovido.");
-        }
-
-        if (!user.getRoles().contains(RoleName.ROLE_CLIENTE)) {
-            throw new RuntimeException("Solo los usuarios CLIENTE pueden solicitar ser CONDUCTOR.");
-        }
+        Preconditions.checkArgument(user.isActivo(), "El usuario debe tener la cuenta activa para ser promovido.");
+        Preconditions.checkArgument(user.getRoles().contains(RoleName.ROLE_CLIENTE),
+                "Solo los usuarios CLIENTE pueden solicitar ser CONDUCTOR.");
 
         Set<RoleName> roles = user.getRoles();
         if (!roles.contains(RoleName.ROLE_CONDUCTOR)) {
@@ -74,11 +74,15 @@ public class UserService implements UserServiceInterface {
     }
 
     public void actualizarPassword(User user, String nuevaPassword) {
+        Preconditions.checkNotNull(user, "El usuario no puede ser nulo");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(nuevaPassword), "La nueva contraseña no puede estar vacía");
+
         user.setPassword(passwordEncoder.encode(nuevaPassword));
         userRepository.save(user);
     }
 
     public User actualizarUsuario(User user) {
+        Preconditions.checkNotNull(user, "El usuario no puede ser nulo");
         return userRepository.save(user);
     }
 }

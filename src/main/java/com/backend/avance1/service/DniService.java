@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -19,6 +20,9 @@ public class DniService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    @Value("${dni.security}")
+    private String security;
+
     public DniService() {
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
@@ -26,7 +30,7 @@ public class DniService {
 
     public Map<String, String> consultarDni(String dni) {
         HttpHeaders headers = buildHeaders();
-        String body = String.format("dni4=%s&company=&action=buscar_nombres&security=e192e49120", dni);
+        String body = String.format("dni4=%s&company=&action=buscar_nombres&security=%s", dni, security);
 
         HttpEntity<String> request = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(URL, HttpMethod.POST, request, String.class);
@@ -83,7 +87,7 @@ public class DniService {
         info.put("apellido_paterno", apellidoPaterno.trim());
         info.put("apellido_materno", apellidoMaterno.trim());
 
-        return info;
+        return info;    
     }
 
     private Map<String, String> parsearMensaje(String mensaje) {

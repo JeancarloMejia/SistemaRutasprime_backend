@@ -21,4 +21,5 @@ public interface ConductorInfoServiceInterface {
     );
 
     ConductorInfoResponseDTO actualizarEstado(Long id, EstadoVerificacion estado, String observacion);
+    ConductorInfoResponseDTO obtenerEstadoPorEmail(String email);
 }
