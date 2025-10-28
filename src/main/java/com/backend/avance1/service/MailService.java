@@ -1,5 +1,6 @@
 package com.backend.avance1.service;
 
+import com.google.common.base.Strings;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +9,8 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -22,9 +22,10 @@ public class MailService implements MailServiceInterface {
     public void enviarCorreoHtml(String para, String asunto, String templateName, String nombre, String codigo)
             throws MessagingException, IOException {
 
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("nombre", nombre != null ? nombre : "");
-        variables.put("codigo", codigo != null ? codigo : "");
+        Map<String, Object> variables = ImmutableMap.of(
+                "nombre", Strings.nullToEmpty(nombre),
+                "codigo", Strings.nullToEmpty(codigo)
+        );
 
         String htmlContent = cargarYReemplazarVariables(templateName, variables);
         MimeMessage mimeMessage = crearMensajeHtml(para, asunto, htmlContent, null);

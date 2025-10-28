@@ -1,20 +1,24 @@
 package com.backend.avance1.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.Normalizer;
 
 public class TextUtils {
 
+
     public static String normalizarTexto(String texto) {
-        if (texto == null) return "";
+        if (StringUtils.isBlank(texto)) {
+            return "";
+        }
 
-        texto = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        String normalizado = Normalizer.normalize(texto, Normalizer.Form.NFD);
+        normalizado = normalizado.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 
-        texto = texto.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        normalizado = StringUtils.trimToEmpty(normalizado).toUpperCase();
+        normalizado = normalizado.replaceAll("\\s+", " ");
 
-        texto = texto.toUpperCase().trim();
-
-        texto = texto.replaceAll("\\s+", " ");
-
-        return texto;
+        return normalizado;
     }
+
 }

@@ -17,7 +17,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-
+import com.google.common.base.MoreObjects;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneId;
@@ -42,7 +42,7 @@ public class ContactService implements ContactServiceInterface {
 
     private String generateMessageCode() {
         Long lastId = contactRepository.findLastId();
-        long nextId = (lastId == null) ? 1 : lastId + 1;
+        long nextId = MoreObjects.firstNonNull(lastId, 0L) + 1;
         int year = Year.now().getValue();
         return String.format("RP-%d-%04d", year, nextId);
     }

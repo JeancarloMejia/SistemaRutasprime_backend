@@ -52,6 +52,18 @@ public class ConductorController {
         );
     }
 
+    @PreAuthorize("hasRole('CLIENTE')")
+    @GetMapping("/status")
+    public ResponseEntity<ApiResponse> getStatus(
+            @AuthenticationPrincipal(expression = "email") String email
+    ) {
+        ConductorInfoResponseDTO info = conductorInfoService.obtenerEstadoPorEmail(email);
+        if (info == null) {
+            return ResponseEntity.ok(new ApiResponse(false, "No has realizado una solicitud de conductor aún", null));
+        }
+        return ResponseEntity.ok(new ApiResponse(true, "Estado de solicitud obtenido correctamente", info));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
     @PutMapping("/verify/{id}")
     public ResponseEntity<ApiResponse> verify(
