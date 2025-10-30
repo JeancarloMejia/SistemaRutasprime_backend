@@ -6,14 +6,18 @@ import com.backend.avance1.dto.ChangePasswordDTO;
 import com.backend.avance1.entity.User;
 import com.backend.avance1.service.MailService;
 import com.backend.avance1.service.UserService;
+import com.backend.avance1.service.UserExcelService;
+import org.springframework.http.MediaType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -24,7 +28,7 @@ public class UserController {
     private final UserService userService;
     private final MailService mailService;
     private final BCryptPasswordEncoder passwordEncoder;
-
+    private final UserExcelService userExcelService;
 
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse> getProfile(@AuthenticationPrincipal User user) {
@@ -127,5 +131,20 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity
                         .badRequest()
                         .body(new ApiResponse(false, "Usuario no encontrado")));
+    }
+
+    @GetMapping("/export/excel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<byte[]> exportUsersToExcel() {
+        try {
+            byte[] excelData = userExcelService.exportUsersToExcel();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=usuarios.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(excelData);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
