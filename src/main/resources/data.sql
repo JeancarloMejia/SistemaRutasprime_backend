@@ -25,7 +25,7 @@ VALUES (
            '934567890',
            'Calle Ficticia 456',
            '12345678',
-           'cliente@rutasprime.com',
+           'josereyy029@gmail.com',
            'Ana',
            '$2a$10$47Jzqtc52KOceWAU3PU/uO/NcfVUQl7r3n2/XNUtxjXKF8UaNwqEm' -- contraseña: admin123
        );

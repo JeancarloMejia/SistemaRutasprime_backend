@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -85,4 +87,28 @@ public class UserService implements UserServiceInterface {
         Preconditions.checkNotNull(user, "El usuario no puede ser nulo");
         return userRepository.save(user);
     }
+
+    public List<User> listarClientes() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(RoleName.ROLE_CLIENTE)
+                        && !u.getRoles().contains(RoleName.ROLE_CONDUCTOR)
+                        && !u.getRoles().contains(RoleName.ROLE_ADMIN)
+                        && !u.getRoles().contains(RoleName.ROLE_SUPERADMIN))
+                .collect(Collectors.toList());
+    }
+
+    public List<User> listarConductoresYClientes() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(RoleName.ROLE_CONDUCTOR)
+                        && u.getRoles().contains(RoleName.ROLE_CLIENTE))
+                .collect(Collectors.toList());
+    }
+
+    public List<User> listarAdminsYSuperAdmins() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(RoleName.ROLE_ADMIN)
+                        || u.getRoles().contains(RoleName.ROLE_SUPERADMIN))
+                .collect(Collectors.toList());
+    }
+
 }

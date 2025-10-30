@@ -4,6 +4,7 @@ import com.backend.avance1.dto.ConductorInfoDTO;
 import com.backend.avance1.dto.ConductorInfoResponseDTO;
 import com.backend.avance1.entity.*;
 import com.backend.avance1.repository.ConductorInfoRepository;
+import com.backend.avance1.repository.ConductorInfoHistorialRepository;
 import com.backend.avance1.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ import java.util.*;
 public class ConductorInfoService implements ConductorInfoServiceInterface {
 
     private final ConductorInfoRepository conductorInfoRepository;
+    private final ConductorInfoHistorialRepository historialRepository;
     private final UserRepository userRepository;
     private final UserService userService;
     private final FileStorageService fileStorageService;
@@ -52,10 +54,6 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
             throw new RuntimeException("Solo los usuarios con rol CLIENTE pueden aplicar para ser conductor.");
         }
 
-        if (conductorInfoRepository.findByUser(user).isPresent()) {
-            throw new RuntimeException("Ya existe una solicitud pendiente o aprobada para este usuario.");
-        }
-
         String dni = user.getDniRuc();
         String codigoSolicitud = "COND-" + LocalDate.now().toString().replace("-", "")
                 + "-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
@@ -68,30 +66,69 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
         String rutaSoat = fileStorageService.guardarArchivo(dni, soat, "soat");
         String rutaRevision = fileStorageService.guardarArchivo(dni, revisionTecnica, "revision_tecnica");
 
-        ConductorInfo info = ConductorInfo.builder()
-                .user(user)
-                .codigoSolicitud(codigoSolicitud)
-                .fechaSolicitud(LocalDateTime.now())
-                .fechaNacimiento(dto.getFechaNacimiento())
-                .numeroLicenciaConducir(dto.getNumeroLicenciaConducir().toUpperCase())
-                .placa(dto.getPlaca().toUpperCase())
-                .marca(dto.getMarca())
-                .color(dto.getColor())
-                .anioFabricacion(dto.getAnioFabricacion())
-                .fotoPersonaLicencia(rutaFotoPersonaLicencia)
-                .fotoLicencia(rutaFotoLicencia)
-                .antecedentesPenales(rutaAntecedentes)
-                .tarjetaPropiedad(rutaTarjetaProp)
-                .tarjetaCirculacion(rutaTarjetaCirc)
-                .soat(rutaSoat)
-                .revisionTecnica(rutaRevision)
-                .estado(EstadoVerificacion.PENDIENTE)
-                .build();
+        Optional<ConductorInfo> solicitudExistenteOpt = conductorInfoRepository.findByUser(user);
+        ConductorInfo info;
 
-        info = conductorInfoRepository.save(info);
+        if (solicitudExistenteOpt.isPresent()) {
+            ConductorInfo existente = solicitudExistenteOpt.get();
+
+            if (existente.getEstado() == EstadoVerificacion.PENDIENTE) {
+                throw new RuntimeException("Ya tienes una solicitud pendiente de verificación.");
+            }
+
+            if (existente.getEstado() == EstadoVerificacion.APROBADO) {
+                throw new RuntimeException("Tu solicitud ya fue aprobada. No puedes enviar otra.");
+            }
+
+            existente.setCodigoSolicitud(codigoSolicitud);
+            existente.setFechaSolicitud(LocalDateTime.now());
+            existente.setFechaNacimiento(dto.getFechaNacimiento());
+            existente.setNumeroLicenciaConducir(dto.getNumeroLicenciaConducir().toUpperCase());
+            existente.setPlaca(dto.getPlaca().toUpperCase());
+            existente.setMarca(dto.getMarca());
+            existente.setColor(dto.getColor());
+            existente.setAnioFabricacion(dto.getAnioFabricacion());
+            existente.setFotoPersonaLicencia(rutaFotoPersonaLicencia);
+            existente.setFotoLicencia(rutaFotoLicencia);
+            existente.setAntecedentesPenales(rutaAntecedentes);
+            existente.setTarjetaPropiedad(rutaTarjetaProp);
+            existente.setTarjetaCirculacion(rutaTarjetaCirc);
+            existente.setSoat(rutaSoat);
+            existente.setRevisionTecnica(rutaRevision);
+            existente.setEstado(EstadoVerificacion.PENDIENTE);
+            existente.setObservacionAdmin(null);
+
+            info = conductorInfoRepository.save(existente);
+
+            guardarHistorial(info, generarTextoIntento(user));
+
+        } else {
+            info = ConductorInfo.builder()
+                    .user(user)
+                    .codigoSolicitud(codigoSolicitud)
+                    .fechaSolicitud(LocalDateTime.now())
+                    .fechaNacimiento(dto.getFechaNacimiento())
+                    .numeroLicenciaConducir(dto.getNumeroLicenciaConducir().toUpperCase())
+                    .placa(dto.getPlaca().toUpperCase())
+                    .marca(dto.getMarca())
+                    .color(dto.getColor())
+                    .anioFabricacion(dto.getAnioFabricacion())
+                    .fotoPersonaLicencia(rutaFotoPersonaLicencia)
+                    .fotoLicencia(rutaFotoLicencia)
+                    .antecedentesPenales(rutaAntecedentes)
+                    .tarjetaPropiedad(rutaTarjetaProp)
+                    .tarjetaCirculacion(rutaTarjetaCirc)
+                    .soat(rutaSoat)
+                    .revisionTecnica(rutaRevision)
+                    .estado(EstadoVerificacion.PENDIENTE)
+                    .build();
+
+            info = conductorInfoRepository.save(info);
+
+            guardarHistorial(info, "Solicitud inicial creada.");
+        }
 
         Map<String, Object> variables = crearVariablesCorreo(user, dto, dni, codigoSolicitud);
-
         FileSystemResource[] adjuntos = {
                 new FileSystemResource(new File(rutaFotoPersonaLicencia)),
                 new FileSystemResource(new File(rutaFotoLicencia)),
@@ -145,6 +182,8 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
 
         conductorInfoRepository.save(info);
 
+        guardarHistorial(info, "Estado actualizado a " + estado.name() + " - " + observacion);
+
         try {
             enviarCorreoResultado(info);
         } catch (Exception e) {
@@ -154,12 +193,24 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
         return ConductorInfoResponseDTO.fromEntity(info);
     }
 
+    private void guardarHistorial(ConductorInfo info, String observacion) {
+        ConductorInfoHistorial historial = ConductorInfoHistorial.builder()
+                .conductorInfo(info)
+                .user(info.getUser())
+                .estado(info.getEstado())
+                .codigoSolicitud(info.getCodigoSolicitud())
+                .fechaCambio(LocalDateTime.now())
+                .observacion(observacion)
+                .build();
+
+        historialRepository.save(historial);
+    }
+
     public ConductorInfoResponseDTO obtenerEstadoPorEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
 
         Optional<ConductorInfo> infoOpt = conductorInfoRepository.findByUser(user);
-
         return infoOpt.map(ConductorInfoResponseDTO::fromEntity).orElse(null);
     }
 
@@ -182,7 +233,6 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
 
     private void enviarCorreoResultado(ConductorInfo info) throws Exception {
         User user = info.getUser();
-
         String fechaVerificacion = LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
 
@@ -201,11 +251,23 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
                 ? "Tu solicitud de conductor fue aprobada"
                 : "Tu solicitud de conductor fue rechazada";
 
-        mailService.enviarCorreoHtmlConVariables(
-                user.getEmail(),
-                asunto,
-                template,
-                variables
-        );
+        mailService.enviarCorreoHtmlConVariables(user.getEmail(), asunto, template, variables);
+    }
+
+    private String generarTextoIntento(User user) {
+        List<ConductorInfoHistorial> historialPrevio =
+                historialRepository.findByConductorInfo_User_IdOrderByFechaCambioDesc(user.getId());
+
+        long cantidadIntentos = historialPrevio.stream()
+                .filter(h -> Optional.ofNullable(h.getObservacion()).orElse("")
+                        .toLowerCase().contains("intento"))
+                .count() + 1;
+
+        return switch ((int) cantidadIntentos) {
+            case 1 -> "Segundo intento de solicitud.";
+            case 2 -> "Tercer intento de solicitud.";
+            case 3 -> "Cuarto intento de solicitud.";
+            default -> cantidadIntentos + "° intento de solicitud.";
+        };
     }
 }
