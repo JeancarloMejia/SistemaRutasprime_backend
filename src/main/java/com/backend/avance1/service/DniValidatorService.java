@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 @Service
-public class DniValidatorService {
+public class DniValidatorService implements DniValidatorServiceInterface {
 
     private static final Logger logger = LoggerFactory.getLogger(DniValidatorService.class);
     private final DniService dniService;

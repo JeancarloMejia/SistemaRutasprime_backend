@@ -6,6 +6,8 @@ import com.backend.avance1.entity.ConductorInfo;
 import com.backend.avance1.entity.EstadoVerificacion;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface ConductorInfoServiceInterface {
 
     ConductorInfo registrarSolicitud(
@@ -21,5 +23,8 @@ public interface ConductorInfoServiceInterface {
     );
 
     ConductorInfoResponseDTO actualizarEstado(Long id, EstadoVerificacion estado, String observacion);
+
     ConductorInfoResponseDTO obtenerEstadoPorEmail(String email);
+
+    List<ConductorInfo> listarTodasSolicitudesEntity();
 }
