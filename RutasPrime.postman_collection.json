@@ -1,128 +1,562 @@
 {
   "info": {
-    "name": "Rutas Prime API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "8e234f8b-b12e-4e0d-9abc-df4e9a2a77a9"
+    "_postman_id": "f7705568-e3aa-4c13-8446-4b09fcd032fe",
+    "name": "Rutas Prime API V2",
+    "description": "Colección completa de endpoints para Rutas Prime (Auth Public, Admin, User, Conductor, Contact)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+    "_exporter_id": "48648001",
+    "_collection_link": "https://juan404999-5613688.postman.co/workspace/Juan-Luis's-Workspace~389931f6-8e3f-4ac3-8934-fe2ceaf28ad8/collection/48648001-f7705568-e3aa-4c13-8446-4b09fcd032fe?action=share&source=collection_link&creator=48648001"
   },
   "item": [
     {
-      "name": "Auth - Register",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "url": { "raw": "http://localhost:8080/api/auth/register", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","register"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombres\": \"Juan\",\n  \"apellidos\": \"Pérez\",\n  \"celular\": \"987654321\",\n  \"email\": \"juan@example.com\",\n  \"direccion\": \"Av. Lima 123\",\n  \"dniRuc\": \"12345678\",\n  \"password\": \"123456\"\n}"
+      "name": "Auth Admin",
+      "item": [
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@rutasprime.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/admin/login"
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar Admin (Solo SUPERADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_superadmin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Carlos\",\n  \"apellidos\": \"Ramirez\",\n  \"celular\": \"999288777\",\n  \"email\": \"admin10@rutasprime.com\",\n  \"direccion\": \"Calle Los Laureles 321\",\n  \"dniRuc\": \"55667788\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/admin/register-admin"
+          },
+          "response": []
         }
+      ]
+    },
+    {
+      "name": "Auth Public",
+      "item": [
+        {
+          "name": "Registrar Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"JEAN Carlo\",\n  \"apellidos\": \"MeJIA ConDEZO\",\n  \"celular\": \"987654321\",\n  \"email\": \"juan404999@gmail.com\",\n  \"direccion\": \"Av. Primavera 456\",\n  \"dniRuc\": \"72317167\",\n  \"password\": \"Solecitos22@\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/public/register"
+          },
+          "response": []
+        },
+        {
+          "name": "Verificar OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan404999@gmail.com\",\n  \"codigo\": \"680632\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/public/verify-otp"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"josereyy029@gmail.com\",\n  \"password\": \"admin123\"\n}   "
+            },
+            "url": "{{base_url}}/api/auth/public/login"
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juanperez@example.com\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/public/forgot-password"
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juanperez@example.com\",\n  \"codigo\": \"785412\",\n  \"nuevaPassword\": \"NuevoPass@123\",\n  \"confirmPassword\": \"NuevoPass@123\"\n}"
+            },
+            "url": "{{base_url}}/api/auth/public/reset-password"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Obtener Perfil",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "url": "{{base_url}}/api/user/profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Perfil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Juan Manuel\",\n  \"apellidos\": \"Pérez Salas\",\n  \"direccion\": \"Av. Los Alamos 789\"\n}"
+            },
+            "url": "{{base_url}}/api/user/update"
+          },
+          "response": []
+        },
+        {
+          "name": "Cambiar Contraseña",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Password@123\",\n  \"newPassword\": \"NuevoPass@2025\"\n}"
+            },
+            "url": "{{base_url}}/api/user/change-password"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Clientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/clientes"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Conductores-Clientes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/conductores-clientes"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Admin y SuperAdmin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/admins"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "http://localhost:8080/api/user/3"
+          },
+          "response": []
+        },
+        {
+          "name": "Exportar EXCEL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "http://localhost:8080/api/user/export/excel"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Enviar mensaje de contacto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Luis Torres\",\n  \"email\": \"josereyy029@gmail.com\",\n  \"message\": \"Holaaaaa, quisiera saber cómo registrarme como conductor.\"\n}"
+            },
+            "url": "{{base_url}}/api/contact"
+          },
+          "response": []
+        },
+        {
+          "name": "Responder al usuario (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Soporte Técnico\",\n  \"email\": \"josereyy029@gmail.com\",\n  \"replyMessage\": \"Gracias por tu consulta, te responderemos en breve.\"\n}"
+            },
+            "url": "{{base_url}}/api/contact/reply"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener detalles de un mensaje de contacto por código",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "http://localhost:8080/api/contact/RP-2025-0001"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Mensajes de Contacto",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "http://localhost:8080/api/contact/all"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Conductor",
+      "item": [
+        {
+          "name": "Aplicar como Conductor (Cliente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "fechaNacimiento",
+                  "value": "1990-06-15",
+                  "type": "text"
+                },
+                {
+                  "key": "numeroLicenciaConducir",
+                  "value": "B1234567",
+                  "type": "text"
+                },
+                {
+                  "key": "placa",
+                  "value": "ABC-456",
+                  "type": "text"
+                },
+                {
+                  "key": "marca",
+                  "value": "Toyota",
+                  "type": "text"
+                },
+                {
+                  "key": "color",
+                  "value": "Rojo",
+                  "type": "text"
+                },
+                {
+                  "key": "anioFabricacion",
+                  "value": "2018",
+                  "type": "text"
+                },
+                {
+                  "key": "fotoPersonaLicencia",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "fotoLicencia",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "antecedentesPenales",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "tarjetaPropiedad",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "tarjetaCirculacion",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "soat",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "revisionTecnica",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/conductor/apply"
+          },
+          "response": []
+        },
+        {
+          "name": "Verificar Solicitud (Admin / Superadmin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"RECHAZADO\",\n  \"observacion\": \"PA LA PROXIMAAA\"\n}"
+            },
+            "url": "{{base_url}}/api/conductor/verify/1"
+          },
+          "response": []
+        },
+        {
+          "name": "Verificar Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/conductor/status"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Solicitudes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "http://localhost:8080/api/conductor/list"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Estado de Usuario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}",
+                "type": "text"
+              }
+            ],
+            "url": "http://localhost:8080/api/conductor/historial/2"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
       }
     },
     {
-      "name": "Auth - Verify OTP",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "http://localhost:8080/api/auth/verify-otp", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","verify-otp"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"codigo\": \"123456\"\n}"
-        }
-      }
-    },
-    {
-      "name": "Auth - Login",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "http://localhost:8080/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","login"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"password\": \"123456\"\n}"
-        }
-      }
-    },
-    {
-      "name": "Auth - Forgot Password",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "http://localhost:8080/api/auth/forgot-password", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","forgot-password"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"juan@example.com\"\n}"
-        }
-      }
-    },
-    {
-      "name": "Auth - Reset Password",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "http://localhost:8080/api/auth/reset-password", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","reset-password"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"codigo\": \"123456\",\n  \"nuevaPassword\": \"nuevaClave123\"\n}"
-        }
-      }
-    },
-    {
-      "name": "Auth - Reset OTP",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "http://localhost:8080/api/auth/reset-otp", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","auth","reset-otp"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"juan@example.com\",\n  \"type\": \"register\"\n}"
-        }
-      }
-    },
-    {
-      "name": "User - Get Profile",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "url": { "raw": "http://localhost:8080/api/user/profile", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","user","profile"] }
-      }
-    },
-    {
-      "name": "User - Update Profile",
-      "request": {
-        "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "url": { "raw": "http://localhost:8080/api/user/update", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","user","update"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nombres\": \"Juan Carlos\",\n  \"apellidos\": \"Ramírez\",\n  \"direccion\": \"Calle Nueva 456\"\n}"
-        }
-      }
-    },
-    {
-      "name": "User - Change Password",
-      "request": {
-        "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "url": { "raw": "http://localhost:8080/api/user/change-password", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api","user","change-password"] },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"oldPassword\": \"123456\",\n  \"newPassword\": \"nuevaClave123\"\n}"
-        }
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
       }
     }
   ],
   "variable": [
     {
-      "key": "token",
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token_cliente",
+      "value": ""
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_superadmin",
       "value": ""
     }
   ]
