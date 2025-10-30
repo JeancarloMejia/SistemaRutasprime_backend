@@ -4,12 +4,16 @@ import com.backend.avance1.dto.ApiResponse;
 import com.backend.avance1.dto.ContactDTO;
 import com.backend.avance1.dto.ContactDetailDTO;
 import com.backend.avance1.dto.ContactReplyDTO;
+import com.backend.avance1.entity.ContactMessage;
 import com.backend.avance1.service.ContactService;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contact")
@@ -30,6 +34,7 @@ public class ContactController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     @PostMapping("/reply")
     public ResponseEntity<ApiResponse> replyToUser(@Valid @RequestBody ContactReplyDTO dto) {
         try {
@@ -41,6 +46,7 @@ public class ContactController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     @GetMapping("/{code}")
     public ResponseEntity<?> getContactByCode(@PathVariable String code) {
         try {
@@ -50,5 +56,12 @@ public class ContactController {
             return ResponseEntity.status(404)
                     .body(new ApiResponse(false, e.getMessage()));
         }
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    @GetMapping("/all")
+    public ResponseEntity<List<ContactMessage>> getAllContactMessages() {
+        List<ContactMessage> messages = contactService.getAllContactMessages();
+        return ResponseEntity.ok(messages);
     }
 }

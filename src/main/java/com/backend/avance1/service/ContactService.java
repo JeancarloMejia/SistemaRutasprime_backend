@@ -139,4 +139,10 @@ public class ContactService implements ContactServiceInterface {
                 replies
         );
     }
+
+    public List<ContactMessage> getAllContactMessages() {
+        List<ContactMessage> messages = contactRepository.findAll();
+        messages.forEach(m -> m.setReplies(null));
+        return messages;
+    }
 }

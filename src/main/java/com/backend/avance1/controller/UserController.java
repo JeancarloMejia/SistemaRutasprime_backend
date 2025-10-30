@@ -9,9 +9,12 @@ import com.backend.avance1.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -91,5 +94,38 @@ public class UserController {
         }
 
         return ResponseEntity.ok(new ApiResponse(true, "Contraseña cambiada correctamente"));
+    }
+
+    @GetMapping("/clientes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> listarClientes() {
+        List<User> clientes = userService.listarClientes();
+        return ResponseEntity.ok(new ApiResponse(true, "Usuarios con rol CLIENTE obtenidos", clientes));
+    }
+
+    @GetMapping("/conductores-clientes")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> listarConductoresYClientes() {
+        List<User> conductores = userService.listarConductoresYClientes();
+        return ResponseEntity.ok(new ApiResponse(true, "Usuarios con roles CONDUCTOR y CLIENTE obtenidos", conductores));
+    }
+
+    @GetMapping("/admins")
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    public ResponseEntity<ApiResponse> listarAdminsYSuperAdmins() {
+        List<User> admins = userService.listarAdminsYSuperAdmins();
+        return ResponseEntity.ok(new ApiResponse(true, "Usuarios con rol ADMIN o SUPERADMIN obtenidos", admins));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> obtenerUsuarioPorId(@PathVariable Long id) {
+        return userService.buscarPorId(id)
+                .map(usuario -> ResponseEntity.ok(
+                        new ApiResponse(true, "Usuario encontrado", usuario)
+                ))
+                .orElseGet(() -> ResponseEntity
+                        .badRequest()
+                        .body(new ApiResponse(false, "Usuario no encontrado")));
     }
 }
