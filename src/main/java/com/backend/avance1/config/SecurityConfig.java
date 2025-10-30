@@ -36,14 +36,33 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/public/**",
-                                "/api/contact/**"
+                                "/api/contact",
+                                "/api/contact/",
+                                "/api/contact/**",
+                                "/api/archivos/**"
                         ).permitAll()
-                        .requestMatchers("/api/auth/admin/**").permitAll()
+                        .requestMatchers("/api/auth/admin/login").permitAll()
+                        .requestMatchers("/api/auth/admin/**").hasRole("SUPERADMIN")
+                        .requestMatchers(
+                                "/api/contact/reply",
+                                "/api/contact/all",
+                                "/api/contact/{code}"
+                        ).hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers("/api/conductor/apply", "/api/conductor/status")
+                        .hasRole("CLIENTE")
+                        .requestMatchers("/api/conductor/verify/**",
+                                "/api/conductor/historial/**",
+                                "/api/conductor/list")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers("/api/user/profile", "/api/user/update", "/api/user/change-password")
+                        .authenticated()
+                        .requestMatchers("/api/user/clientes",
+                                "/api/user/conductores-clientes")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers("/api/user/admins")
+                        .hasRole("SUPERADMIN")
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
                         .requestMatchers("/api/super/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/api/conductor/verify/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers("/api/conductor/**").hasAnyRole("CLIENTE", "CONDUCTOR")
-                        .requestMatchers("/api/cliente/**").hasAnyRole("CLIENTE", "CONDUCTOR")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint))
@@ -66,7 +85,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://tudominio.com"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

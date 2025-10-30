@@ -78,4 +78,11 @@ public class ConductorController {
         List<ConductorInfoHistorial> historial = historialRepository.findByConductorInfo_User_IdOrderByFechaCambioDesc(userId);
         return ResponseEntity.ok(new ApiResponse(true, "Historial obtenido correctamente", historial));
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPERADMIN')")
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse> listarSolicitudes() {
+        List<ConductorInfo> solicitudes = conductorInfoService.listarTodasSolicitudesEntity();
+        return ResponseEntity.ok(new ApiResponse(true, "Solicitudes de conductor listadas correctamente", solicitudes));
+    }
 }

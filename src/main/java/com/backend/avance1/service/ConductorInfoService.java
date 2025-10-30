@@ -32,6 +32,9 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
     @Value("${app.conductor.solicitudes.mail}")
     private String correoDestino;
 
+    @Value("${app.base.url}")
+    private String baseUrl;
+
     public ConductorInfo registrarSolicitud(
             String email,
             ConductorInfoDTO dto,
@@ -58,13 +61,23 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
         String codigoSolicitud = "COND-" + LocalDate.now().toString().replace("-", "")
                 + "-" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
 
-        String rutaFotoPersonaLicencia = fileStorageService.guardarArchivo(dni, fotoPersonaLicencia, "foto_persona_licencia");
-        String rutaFotoLicencia = fileStorageService.guardarArchivo(dni, fotoLicencia, "foto_licencia");
-        String rutaAntecedentes = fileStorageService.guardarArchivo(dni, antecedentesPenales, "antecedentes_penales");
-        String rutaTarjetaProp = fileStorageService.guardarArchivo(dni, tarjetaPropiedad, "tarjeta_propiedad");
-        String rutaTarjetaCirc = fileStorageService.guardarArchivo(dni, tarjetaCirculacion, "tarjeta_circulacion");
-        String rutaSoat = fileStorageService.guardarArchivo(dni, soat, "soat");
-        String rutaRevision = fileStorageService.guardarArchivo(dni, revisionTecnica, "revision_tecnica");
+        String rutaFisicaFotoPersonaLicencia = fileStorageService.guardarArchivo(dni, fotoPersonaLicencia, "foto_persona_licencia");
+        String rutaFisicaFotoLicencia = fileStorageService.guardarArchivo(dni, fotoLicencia, "foto_licencia");
+        String rutaFisicaAntecedentes = fileStorageService.guardarArchivo(dni, antecedentesPenales, "antecedentes_penales");
+        String rutaFisicaTarjetaProp = fileStorageService.guardarArchivo(dni, tarjetaPropiedad, "tarjeta_propiedad");
+        String rutaFisicaTarjetaCirc = fileStorageService.guardarArchivo(dni, tarjetaCirculacion, "tarjeta_circulacion");
+        String rutaFisicaSoat = fileStorageService.guardarArchivo(dni, soat, "soat");
+        String rutaFisicaRevision = fileStorageService.guardarArchivo(dni, revisionTecnica, "revision_tecnica");
+
+        String baseArchivoUrl = baseUrl + "/api/archivos/" + dni + "/";
+
+        String urlFotoPersonaLicencia = baseArchivoUrl + "foto_persona_licencia" + obtenerExtension(fotoPersonaLicencia.getOriginalFilename());
+        String urlFotoLicencia = baseArchivoUrl + "foto_licencia" + obtenerExtension(fotoLicencia.getOriginalFilename());
+        String urlAntecedentes = baseArchivoUrl + "antecedentes_penales" + obtenerExtension(antecedentesPenales.getOriginalFilename());
+        String urlTarjetaProp = baseArchivoUrl + "tarjeta_propiedad" + obtenerExtension(tarjetaPropiedad.getOriginalFilename());
+        String urlTarjetaCirc = baseArchivoUrl + "tarjeta_circulacion" + obtenerExtension(tarjetaCirculacion.getOriginalFilename());
+        String urlSoat = baseArchivoUrl + "soat" + obtenerExtension(soat.getOriginalFilename());
+        String urlRevision = baseArchivoUrl + "revision_tecnica" + obtenerExtension(revisionTecnica.getOriginalFilename());
 
         Optional<ConductorInfo> solicitudExistenteOpt = conductorInfoRepository.findByUser(user);
         ConductorInfo info;
@@ -88,13 +101,13 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
             existente.setMarca(dto.getMarca());
             existente.setColor(dto.getColor());
             existente.setAnioFabricacion(dto.getAnioFabricacion());
-            existente.setFotoPersonaLicencia(rutaFotoPersonaLicencia);
-            existente.setFotoLicencia(rutaFotoLicencia);
-            existente.setAntecedentesPenales(rutaAntecedentes);
-            existente.setTarjetaPropiedad(rutaTarjetaProp);
-            existente.setTarjetaCirculacion(rutaTarjetaCirc);
-            existente.setSoat(rutaSoat);
-            existente.setRevisionTecnica(rutaRevision);
+            existente.setFotoPersonaLicencia(urlFotoPersonaLicencia);
+            existente.setFotoLicencia(urlFotoLicencia);
+            existente.setAntecedentesPenales(urlAntecedentes);
+            existente.setTarjetaPropiedad(urlTarjetaProp);
+            existente.setTarjetaCirculacion(urlTarjetaCirc);
+            existente.setSoat(urlSoat);
+            existente.setRevisionTecnica(urlRevision);
             existente.setEstado(EstadoVerificacion.PENDIENTE);
             existente.setObservacionAdmin(null);
 
@@ -113,30 +126,29 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
                     .marca(dto.getMarca())
                     .color(dto.getColor())
                     .anioFabricacion(dto.getAnioFabricacion())
-                    .fotoPersonaLicencia(rutaFotoPersonaLicencia)
-                    .fotoLicencia(rutaFotoLicencia)
-                    .antecedentesPenales(rutaAntecedentes)
-                    .tarjetaPropiedad(rutaTarjetaProp)
-                    .tarjetaCirculacion(rutaTarjetaCirc)
-                    .soat(rutaSoat)
-                    .revisionTecnica(rutaRevision)
+                    .fotoPersonaLicencia(urlFotoPersonaLicencia)
+                    .fotoLicencia(urlFotoLicencia)
+                    .antecedentesPenales(urlAntecedentes)
+                    .tarjetaPropiedad(urlTarjetaProp)
+                    .tarjetaCirculacion(urlTarjetaCirc)
+                    .soat(urlSoat)
+                    .revisionTecnica(urlRevision)
                     .estado(EstadoVerificacion.PENDIENTE)
                     .build();
 
             info = conductorInfoRepository.save(info);
-
             guardarHistorial(info, "Solicitud inicial creada.");
         }
 
         Map<String, Object> variables = crearVariablesCorreo(user, dto, dni, codigoSolicitud);
         FileSystemResource[] adjuntos = {
-                new FileSystemResource(new File(rutaFotoPersonaLicencia)),
-                new FileSystemResource(new File(rutaFotoLicencia)),
-                new FileSystemResource(new File(rutaAntecedentes)),
-                new FileSystemResource(new File(rutaTarjetaProp)),
-                new FileSystemResource(new File(rutaTarjetaCirc)),
-                new FileSystemResource(new File(rutaSoat)),
-                new FileSystemResource(new File(rutaRevision))
+                new FileSystemResource(new File(rutaFisicaFotoPersonaLicencia)),
+                new FileSystemResource(new File(rutaFisicaFotoLicencia)),
+                new FileSystemResource(new File(rutaFisicaAntecedentes)),
+                new FileSystemResource(new File(rutaFisicaTarjetaProp)),
+                new FileSystemResource(new File(rutaFisicaTarjetaCirc)),
+                new FileSystemResource(new File(rutaFisicaSoat)),
+                new FileSystemResource(new File(rutaFisicaRevision))
         };
 
         try {
@@ -181,7 +193,6 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
         }
 
         conductorInfoRepository.save(info);
-
         guardarHistorial(info, "Estado actualizado a " + estado.name() + " - " + observacion);
 
         try {
@@ -269,5 +280,16 @@ public class ConductorInfoService implements ConductorInfoServiceInterface {
             case 3 -> "Cuarto intento de solicitud.";
             default -> cantidadIntentos + "° intento de solicitud.";
         };
+    }
+
+    public List<ConductorInfo> listarTodasSolicitudesEntity() {
+        return conductorInfoRepository.findAllByOrderByFechaSolicitudDesc();
+    }
+
+    private String obtenerExtension(String nombreArchivo) {
+        if (nombreArchivo == null || !nombreArchivo.contains(".")) {
+            return "";
+        }
+        return nombreArchivo.substring(nombreArchivo.lastIndexOf("."));
     }
 }

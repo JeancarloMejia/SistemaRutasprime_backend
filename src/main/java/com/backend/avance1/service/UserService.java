@@ -111,4 +111,7 @@ public class UserService implements UserServiceInterface {
                 .collect(Collectors.toList());
     }
 
+    public Optional<User> buscarPorId(Long id) {
+        return userRepository.findById(id);
+    }
 }

@@ -116,4 +116,16 @@ public class UserController {
         List<User> admins = userService.listarAdminsYSuperAdmins();
         return ResponseEntity.ok(new ApiResponse(true, "Usuarios con rol ADMIN o SUPERADMIN obtenidos", admins));
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> obtenerUsuarioPorId(@PathVariable Long id) {
+        return userService.buscarPorId(id)
+                .map(usuario -> ResponseEntity.ok(
+                        new ApiResponse(true, "Usuario encontrado", usuario)
+                ))
+                .orElseGet(() -> ResponseEntity
+                        .badRequest()
+                        .body(new ApiResponse(false, "Usuario no encontrado")));
+    }
 }
