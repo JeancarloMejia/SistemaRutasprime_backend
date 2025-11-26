@@ -114,4 +114,10 @@ public class UserService implements UserServiceInterface {
     public Optional<User> buscarPorId(Long id) {
         return userRepository.findById(id);
     }
+
+    public boolean celularDisponibleParaUsuario(String celular, Long userId) {
+        return userRepository.findByCelular(celular)
+                .map(existingUser -> existingUser.getId().equals(userId))
+                .orElse(true);
+    }
 }
