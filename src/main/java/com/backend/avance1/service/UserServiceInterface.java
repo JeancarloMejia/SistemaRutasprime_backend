@@ -26,4 +26,6 @@ public interface UserServiceInterface {
     List<User> listarAdminsYSuperAdmins();
 
     Optional<User> buscarPorId(Long id);
+
+    boolean celularDisponibleParaUsuario(String celular, Long userId);
 }

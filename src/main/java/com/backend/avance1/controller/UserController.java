@@ -48,10 +48,12 @@ public class UserController {
                     .body(new ApiResponse(false, "Usuario no autenticado"));
         }
 
-        user.setNombres(updatedUser.getNombres());
-        user.setApellidos(updatedUser.getApellidos());
+        if (!userService.celularDisponibleParaUsuario(updatedUser.getCelular(), user.getId())) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "El número de celular ya está en uso"));
+        }
         user.setDireccion(updatedUser.getDireccion());
-
+        user.setCelular(updatedUser.getCelular());
         User savedUser = userService.actualizarUsuario(user);
 
         try {
