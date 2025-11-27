@@ -2,6 +2,7 @@ package com.backend.avance1.service;
 
 import com.backend.avance1.entity.RoleName;
 import com.backend.avance1.entity.User;
+import com.backend.avance1.repository.EmpresaRepository;
 import com.backend.avance1.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,6 +23,7 @@ import com.google.common.collect.Sets;
 public class UserService implements UserServiceInterface {
 
     private final UserRepository userRepository;
+    private final EmpresaRepository empresaRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public User registrar(User user) {
@@ -32,11 +34,23 @@ public class UserService implements UserServiceInterface {
         userRepository.findByEmail(user.getEmail())
                 .ifPresent(u -> { throw new RuntimeException("El correo ya está registrado."); });
 
+        empresaRepository.findByCorreoCorporativo(user.getEmail())
+                .ifPresent(e -> { throw new RuntimeException("El correo ya está en uso por una empresa."); });
+
         userRepository.findByCelular(user.getCelular())
                 .ifPresent(u -> { throw new RuntimeException("El celular ya está registrado."); });
 
+        empresaRepository.findByTelefono(user.getCelular())
+                .ifPresent(e -> { throw new RuntimeException("El celular ya está en uso por una empresa."); });
+
         userRepository.findByDniRuc(user.getDniRuc())
                 .ifPresent(u -> { throw new RuntimeException("El DNI/RUC ya está registrado."); });
+
+        empresaRepository.findByDni(user.getDniRuc())
+                .ifPresent(e -> { throw new RuntimeException("El DNI ya está en uso por una empresa."); });
+
+        empresaRepository.findByRucEmpresa(user.getDniRuc())
+                .ifPresent(e -> { throw new RuntimeException("El RUC ya está en uso por una empresa."); });
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setFechaRegistro(LocalDateTime.now());
@@ -68,6 +82,14 @@ public class UserService implements UserServiceInterface {
 
     public Optional<User> buscarPorEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public Optional<User> buscarPorCelular(String celular) {
+        return userRepository.findByCelular(celular);
+    }
+
+    public Optional<User> buscarPorDniRuc(String dniRuc) {
+        return userRepository.findByDniRuc(dniRuc);
     }
 
     public void activarUsuario(User user) {
@@ -119,5 +141,37 @@ public class UserService implements UserServiceInterface {
         return userRepository.findByCelular(celular)
                 .map(existingUser -> existingUser.getId().equals(userId))
                 .orElse(true);
+    }
+
+    public long contarUsuariosClientes() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(RoleName.ROLE_CLIENTE)
+                        && !u.getRoles().contains(RoleName.ROLE_CONDUCTOR)
+                        && !u.getRoles().contains(RoleName.ROLE_ADMIN)
+                        && !u.getRoles().contains(RoleName.ROLE_SUPERADMIN))
+                .count();
+    }
+
+    public long contarUsuariosClientesYConductores() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(RoleName.ROLE_CLIENTE)
+                        && u.getRoles().contains(RoleName.ROLE_CONDUCTOR))
+                .count();
+    }
+
+    public long contarUsuariosAdminsYSuperAdmins() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getRoles().contains(RoleName.ROLE_ADMIN)
+                        || u.getRoles().contains(RoleName.ROLE_SUPERADMIN))
+                .count();
+    }
+
+    public boolean eliminarUsuario(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            userRepository.delete(user.get());
+            return true;
+        }
+        return false;
     }
 }

@@ -39,7 +39,6 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse(true, "Perfil de usuario obtenido", user));
     }
 
-
     @PutMapping("/update")
     public ResponseEntity<ApiResponse> updateProfile(@AuthenticationPrincipal User user,
                                                      @Valid @RequestBody UpdateUserDTO updatedUser) {
@@ -47,30 +46,8 @@ public class UserController {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, "Usuario no autenticado"));
         }
-
-        if (!userService.celularDisponibleParaUsuario(updatedUser.getCelular(), user.getId())) {
-            return ResponseEntity.badRequest()
-                    .body(new ApiResponse(false, "El número de celular ya está en uso"));
-        }
-        user.setDireccion(updatedUser.getDireccion());
-        user.setCelular(updatedUser.getCelular());
-        User savedUser = userService.actualizarUsuario(user);
-
-        try {
-            mailService.enviarCorreoHtml(
-                    savedUser.getEmail(),
-                    "Actualización de perfil",
-                    "profile-updated.html",
-                    savedUser.getNombres(),
-                    ""
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Error al enviar correo de actualización de perfil", e);
-        }
-
-        return ResponseEntity.ok(new ApiResponse(true, "Perfil actualizado correctamente", savedUser));
+        return actualizarUsuario(user, updatedUser);
     }
-
 
     @PutMapping("/change-password")
     public ResponseEntity<ApiResponse> changePassword(@AuthenticationPrincipal User user,
@@ -135,6 +112,42 @@ public class UserController {
                         .body(new ApiResponse(false, "Usuario no encontrado")));
     }
 
+    @PutMapping("/update/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> actualizarUsuarioPorAdmin(@PathVariable Long id,
+                                                                 @Valid @RequestBody UpdateUserDTO updatedUser) {
+        return userService.buscarPorId(id)
+                .map(usuario -> actualizarUsuario(usuario, updatedUser))
+                .orElseGet(() -> ResponseEntity
+                        .badRequest()
+                        .body(new ApiResponse(false, "Usuario no encontrado")));
+    }
+
+    private ResponseEntity<ApiResponse> actualizarUsuario(User user, UpdateUserDTO updatedUser) {
+        if (!userService.celularDisponibleParaUsuario(updatedUser.getCelular(), user.getId())) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "El número de celular ya está en uso"));
+        }
+
+        user.setDireccion(updatedUser.getDireccion());
+        user.setCelular(updatedUser.getCelular());
+        User savedUser = userService.actualizarUsuario(user);
+
+        try {
+            mailService.enviarCorreoHtml(
+                    savedUser.getEmail(),
+                    "Actualización de perfil",
+                    "profile-updated.html",
+                    savedUser.getNombres(),
+                    ""
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar correo de actualización de perfil", e);
+        }
+
+        return ResponseEntity.ok(new ApiResponse(true, "Perfil actualizado correctamente", savedUser));
+    }
+
     @GetMapping("/export/excel")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public ResponseEntity<byte[]> exportUsersToExcel() {
@@ -147,6 +160,38 @@ public class UserController {
                     .body(excelData);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/clientes/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> contarUsuariosClientes() {
+        long totalClientes = userService.contarUsuariosClientes();
+        return ResponseEntity.ok(new ApiResponse(true, "Total de usuarios con rol CLIENTE", totalClientes));
+    }
+
+    @GetMapping("/clientes-conductores/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> contarUsuariosClientesYConductores() {
+        long totalClientesYConductores = userService.contarUsuariosClientesYConductores();
+        return ResponseEntity.ok(new ApiResponse(true, "Total de usuarios con roles CLIENTE y CONDUCTOR", totalClientesYConductores));
+    }
+
+    @GetMapping("/admins-superadmins/count")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> contarUsuariosAdminsYSuperAdmins() {
+        long totalAdminsYSuperAdmins = userService.contarUsuariosAdminsYSuperAdmins();
+        return ResponseEntity.ok(new ApiResponse(true, "Total de usuarios con roles ADMIN o SUPERADMIN", totalAdminsYSuperAdmins));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public ResponseEntity<ApiResponse> eliminarUsuario(@PathVariable Long id) {
+        boolean eliminado = userService.eliminarUsuario(id);
+        if (eliminado) {
+            return ResponseEntity.ok(new ApiResponse(true, "Usuario eliminado correctamente"));
+        } else {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "No se pudo eliminar el usuario"));
         }
     }
 }

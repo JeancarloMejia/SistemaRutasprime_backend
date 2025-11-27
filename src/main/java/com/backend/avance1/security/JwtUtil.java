@@ -1,5 +1,6 @@
 package com.backend.avance1.security;
 
+import com.backend.avance1.entity.Empresa;
 import com.backend.avance1.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -29,6 +30,7 @@ public class JwtUtil {
                 .stream()
                 .map(Enum::name)
                 .collect(Collectors.toList()));
+        claims.put("tipo", "user");
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -39,8 +41,28 @@ public class JwtUtil {
                 .compact();
     }
 
+    public String generateTokenEmpresa(Empresa empresa) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tipo", "empresa");
+        claims.put("empresaId", empresa.getId());
+        claims.put("nombreEmpresa", empresa.getNombreEmpresa());
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(empresa.getCorreoCorporativo())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    public String extractTipo(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("tipo", String.class);
     }
 
     public List<String> extractRoles(String token) {

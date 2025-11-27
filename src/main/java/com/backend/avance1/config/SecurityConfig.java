@@ -34,35 +34,64 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints públicos
                         .requestMatchers(
                                 "/api/auth/public/**",
                                 "/api/contact",
                                 "/api/contact/",
                                 "/api/contact/**",
-                                "/api/archivos/**"
+                                "/api/archivos/**",
+                                "/api/empresa/register",
+                                "/api/empresa/login",
+                                "/api/empresa/profile"
                         ).permitAll()
+
+                        // Auth admin
                         .requestMatchers("/api/auth/admin/login").permitAll()
                         .requestMatchers("/api/auth/admin/**").hasRole("SUPERADMIN")
+
+                        // Contact
                         .requestMatchers(
                                 "/api/contact/reply",
                                 "/api/contact/all",
                                 "/api/contact/{code}"
                         ).hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        // Conductor - Cliente
                         .requestMatchers("/api/conductor/apply", "/api/conductor/status")
                         .hasRole("CLIENTE")
-                        .requestMatchers("/api/conductor/verify/**",
+
+                        // Conductor - Admin
+                        .requestMatchers(
+                                "/api/conductor/verify/**",
                                 "/api/conductor/historial/**",
-                                "/api/conductor/list")
-                        .hasAnyRole("ADMIN", "SUPERADMIN")
+                                "/api/conductor/list"
+                        ).hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        // Empresa - Admin
+                        .requestMatchers(
+                                "/api/empresa/verify/**",
+                                "/api/empresa/list",
+                                "/api/empresa/{id}",
+                                "/api/empresa/historial/**"
+                        ).hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        // User
                         .requestMatchers("/api/user/profile", "/api/user/update", "/api/user/change-password")
                         .authenticated()
-                        .requestMatchers("/api/user/clientes",
-                                "/api/user/conductores-clientes")
-                        .hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers(
+                                "/api/user/clientes",
+                                "/api/user/conductores-clientes",
+                                "/api/user/{id}",
+                                "/api/user/export/excel"
+                        ).hasAnyRole("ADMIN", "SUPERADMIN")
                         .requestMatchers("/api/user/admins")
                         .hasRole("SUPERADMIN")
+
+                        // Admin y Super
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
                         .requestMatchers("/api/super/**").hasRole("SUPERADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthEntryPoint))

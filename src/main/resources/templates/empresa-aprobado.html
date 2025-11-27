@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitud Aprobada - {{codigo}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: #ffffff;
+            max-width: 650px;
+            margin: 0 auto;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #28a745;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .highlight {
+            background-color: #eafbea;
+            border-left: 5px solid #28a745;
+            padding: 10px 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .info {
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            font-size: 12px;
+            color: #888;
+        }
+        .logo {
+            width: 120px;
+            margin-top: 10px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e2e2e2;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>¡Cuenta Empresarial Aprobada!</h2>
+
+    <p>Hola <strong>{{nombre}}</strong>,</p>
+
+    <p>Nos complace informarte que tu solicitud de cuenta empresarial ha sido <strong>APROBADA</strong>.</p>
+
+    <div class="highlight">
+        <p><strong>Código de Solicitud:</strong> {{codigo}}</p>
+        <p><strong>Empresa:</strong> {{nombreEmpresa}}</p>
+        <p><strong>RUC:</strong> {{ruc}}</p>
+        <p><strong>Estado:</strong> {{estado}}</p>
+        <p><strong>Fecha de Verificación:</strong> {{fechaVerificacion}}</p>
+    </div>
+
+    <p>Tu cuenta empresarial ha sido activada exitosamente.</p>
+    <p>Ya puedes iniciar sesión con tu correo corporativo y comenzar a usar todos nuestros servicios empresariales.</p>
+
+    <hr>
+    <p class="info"><strong>Observación del Administrador:</strong><br>
+        {{observacion}}
+    </p>
+
+    <div class="footer">
+        <p>Gracias por formar parte de <strong>Rutas Prime</strong></p>
+        <img src="cid:logoImage" alt="Rutas Prime Logo" class="logo">
+    </div>
+</div>
+</body>
+</html>

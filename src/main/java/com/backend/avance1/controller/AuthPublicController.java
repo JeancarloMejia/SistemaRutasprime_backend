@@ -3,6 +3,7 @@ package com.backend.avance1.controller;
 import com.backend.avance1.dto.ApiResponse;
 import com.backend.avance1.dto.ResetPasswordDTO;
 import com.backend.avance1.dto.UserDTO;
+import com.backend.avance1.entity.Empresa;
 import com.backend.avance1.entity.RoleName;
 import com.backend.avance1.entity.User;
 import com.backend.avance1.security.JwtUtil;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import com.backend.avance1.utils.TextFormatUtil;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth/public")
@@ -23,6 +25,7 @@ import java.util.Map;
 public class AuthPublicController {
 
     private final UserService userService;
+    private final EmpresaService empresaService;
     private final OtpService otpService;
     private final MailService mailService;
     private final JwtUtil jwtUtil;
@@ -127,7 +130,8 @@ public class AuthPublicController {
                     return ResponseEntity.ok(
                             new ApiResponse(true, "Login exitoso", Map.of(
                                     "token", token,
-                                    "roles", u.getRoles()
+                                    "roles", u.getRoles(),
+                                    "tipo", "user"
                             ))
                     );
                 })
@@ -139,24 +143,44 @@ public class AuthPublicController {
     public ResponseEntity<ApiResponse> forgotPassword(@RequestBody Map<String, String> body) {
         String email = body.get("email");
 
-        return userService.buscarPorEmail(email)
-                .map(u -> {
-                    String codigo = otpService.generarOtp(email);
-                    try {
-                        mailService.enviarCorreoHtml(
-                                email,
-                                "Recuperación de contraseña",
-                                "otp-reset.html",
-                                u.getNombres(),
-                                codigo
-                        );
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error al enviar correo de recuperación", e);
-                    }
-                    return ResponseEntity.ok(new ApiResponse(true, "OTP enviado al correo"));
-                })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse(false, "Usuario no encontrado")));
+        Optional<User> userOpt = userService.buscarPorEmail(email);
+        if (userOpt.isPresent()) {
+            User u = userOpt.get();
+            String codigo = otpService.generarOtp(email);
+            try {
+                mailService.enviarCorreoHtml(
+                        email,
+                        "Recuperación de contraseña",
+                        "otp-reset.html",
+                        u.getNombres(),
+                        codigo
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Error al enviar correo de recuperación", e);
+            }
+            return ResponseEntity.ok(new ApiResponse(true, "OTP enviado al correo"));
+        }
+
+        Optional<Empresa> empresaOpt = empresaService.buscarPorEmail(email);
+        if (empresaOpt.isPresent()) {
+            Empresa emp = empresaOpt.get();
+            String codigo = otpService.generarOtp(email);
+            try {
+                mailService.enviarCorreoHtml(
+                        email,
+                        "Recuperación de contraseña",
+                        "otp-reset.html",
+                        emp.getNombres(),
+                        codigo
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Error al enviar correo de recuperación", e);
+            }
+            return ResponseEntity.ok(new ApiResponse(true, "OTP enviado al correo"));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(false, "Usuario no encontrado"));
     }
 
     @PostMapping("/reset-password")
@@ -171,23 +195,42 @@ public class AuthPublicController {
                     .body(new ApiResponse(false, "OTP inválido o expirado"));
         }
 
-        return userService.buscarPorEmail(dto.getEmail())
-                .map(u -> {
-                    if (!u.isActivo()) {
-                        return ResponseEntity.badRequest()
-                                .body(new ApiResponse(false, "El usuario no ha activado su cuenta"));
-                    }
+        Optional<User> userOpt = userService.buscarPorEmail(dto.getEmail());
+        if (userOpt.isPresent()) {
+            User u = userOpt.get();
+            if (!u.isActivo()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "El usuario no ha activado su cuenta"));
+            }
 
-                    if (passwordEncoder.matches(dto.getNuevaPassword(), u.getPassword())) {
-                        return ResponseEntity.badRequest()
-                                .body(new ApiResponse(false, "La nueva contraseña no puede ser igual a la anterior"));
-                    }
+            if (passwordEncoder.matches(dto.getNuevaPassword(), u.getPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "La nueva contraseña no puede ser igual a la anterior"));
+            }
 
-                    userService.actualizarPassword(u, dto.getNuevaPassword());
-                    return ResponseEntity.ok(new ApiResponse(true, "Contraseña actualizada correctamente"));
-                })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse(false, "Usuario no encontrado")));
+            userService.actualizarPassword(u, dto.getNuevaPassword());
+            return ResponseEntity.ok(new ApiResponse(true, "Contraseña actualizada correctamente"));
+        }
+
+        Optional<Empresa> empresaOpt = empresaService.buscarPorEmail(dto.getEmail());
+        if (empresaOpt.isPresent()) {
+            Empresa e = empresaOpt.get();
+            if (!e.isActivo()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "La cuenta empresarial no ha sido aprobada"));
+            }
+
+            if (passwordEncoder.matches(dto.getNuevaPassword(), e.getPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "La nueva contraseña no puede ser igual a la anterior"));
+            }
+
+            empresaService.actualizarPassword(e, dto.getNuevaPassword());
+            return ResponseEntity.ok(new ApiResponse(true, "Contraseña actualizada correctamente"));
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(false, "Usuario no encontrado"));
     }
 
     @PostMapping("/reset-otp")
@@ -195,39 +238,64 @@ public class AuthPublicController {
         String email = body.get("email");
         String type = body.get("type");
 
-        return userService.buscarPorEmail(email)
-                .map(user -> {
-                    String codigo = otpService.generarOtp(email);
-                    try {
-                        if ("register".equalsIgnoreCase(type)) {
-                            mailService.enviarCorreoHtml(
-                                    email,
-                                    "Reenvío OTP - Registro",
-                                    "otp-register.html",
-                                    user.getNombres(),
-                                    codigo
-                            );
-                            return ResponseEntity.ok(new ApiResponse(true, "Nuevo OTP enviado para activación"));
-                        }
+        Optional<User> userOpt = userService.buscarPorEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            String codigo = otpService.generarOtp(email);
+            try {
+                if ("register".equalsIgnoreCase(type)) {
+                    mailService.enviarCorreoHtml(
+                            email,
+                            "Reenvío OTP - Registro",
+                            "otp-register.html",
+                            user.getNombres(),
+                            codigo
+                    );
+                    return ResponseEntity.ok(new ApiResponse(true, "Nuevo OTP enviado para activación"));
+                }
 
-                        if ("forgot-password".equalsIgnoreCase(type)) {
-                            mailService.enviarCorreoHtml(
-                                    email,
-                                    "Reenvío OTP - Recuperación de contraseña",
-                                    "otp-reset.html",
-                                    user.getNombres(),
-                                    codigo
-                            );
-                            return ResponseEntity.ok(new ApiResponse(true, "Nuevo OTP enviado para recuperación de contraseña"));
-                        }
+                if ("forgot-password".equalsIgnoreCase(type)) {
+                    mailService.enviarCorreoHtml(
+                            email,
+                            "Reenvío OTP - Recuperación de contraseña",
+                            "otp-reset.html",
+                            user.getNombres(),
+                            codigo
+                    );
+                    return ResponseEntity.ok(new ApiResponse(true, "Nuevo OTP enviado para recuperación de contraseña"));
+                }
 
-                        return ResponseEntity.badRequest()
-                                .body(new ApiResponse(false, "Tipo de OTP no válido"));
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error al enviar correo", e);
-                    }
-                })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse(false, "Usuario no encontrado")));
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Tipo de OTP no válido"));
+            } catch (Exception e) {
+                throw new RuntimeException("Error al enviar correo", e);
+            }
+        }
+
+        Optional<Empresa> empresaOpt = empresaService.buscarPorEmail(email);
+        if (empresaOpt.isPresent()) {
+            Empresa empresa = empresaOpt.get();
+            String codigo = otpService.generarOtp(email);
+            try {
+                if ("forgot-password".equalsIgnoreCase(type)) {
+                    mailService.enviarCorreoHtml(
+                            email,
+                            "Reenvío OTP - Recuperación de contraseña",
+                            "otp-reset.html",
+                            empresa.getNombres(),
+                            codigo
+                    );
+                    return ResponseEntity.ok(new ApiResponse(true, "Nuevo OTP enviado para recuperación de contraseña"));
+                }
+
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse(false, "Tipo de OTP no válido"));
+            } catch (Exception e) {
+                throw new RuntimeException("Error al enviar correo", e);
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse(false, "Usuario no encontrado"));
     }
 }
