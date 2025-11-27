@@ -57,3 +57,32 @@ INSERT INTO contact_replies (
     contact_message_id, id, replied_at, reply_code, reply_message
 ) VALUES
     (1, 1, '2025-11-26 11:35:03.281252', 'RP-2025-0002-R1', 'PROBANDO');
+
+-- ================================================
+-- Datos de la tabla empresas
+-- ================================================
+INSERT INTO empresas (
+    activo, dni, fecha_registro, fecha_solicitud, id, telefono, ruc_empresa, apellidos, codigo_solicitud,
+    correo_corporativo, datos_sunat, nombre_empresa, nombres, observacion_admin, password, estado
+) VALUES
+    (b'1', '40938938', '2025-11-27 08:20:25.461483', '2025-11-27 08:20:25.461483', 1, '987654325', '20106897914', 'Pereyra', 'EMP-20251127-D0F6A',
+     'entel@rutasprime.com',
+     '{"dpto": "-", "lote": "-", "tipo": "SOCIEDAD ANONIMA", "estado": "ACTIVO", "numero": "791", "ubigeo": "150131", "manzana": "-", "distrito": "SAN ISIDRO", "interior": "-", "via_tipo": "AV.", "condicion": "HABIDO", "direccion": "AV. REPUBLICA DE COLOMBIA NRO 791", "kilometro": "-", "provincia": "LIMA", "zona_tipo": "-", "via_nombre": "REPUBLICA DE COLOMBIA", "zona_codigo": "-", "departamento": "LIMA", "razon_social": "ENTEL PERU S.A.", "locales_anexos": "", "tipo_documento": "6", "numero_documento": "20106897914", "tipo_facturacion": "MANUAL/MECANIZADO/COMPUTARIZADO", "comercio_exterior": "EXPORTADOR", "tipo_contabilidad": "MANUAL/COMPUTARIZADO", "actividad_economica": "ACTIVIDADES DE TELECOMUNICACIONES INALAMBRICAS", "es_agente_retencion": true, "numero_trabajadores": "1771", "es_buen_contribuyente": false}',
+     'ENTEL PERU S.A.', 'Jose', 'OK', '$2a$10$47Jzqtc52KOceWAU3PU/uO/NcfVUQl7r3n2/XNUtxjXKF8UaNwqEm', 'APROBADO');
+
+-- ================================================
+-- Datos de la tabla empresa_historial
+-- ================================================
+INSERT INTO empresa_historial (
+    empresa_id, fecha_cambio, id, codigo_solicitud, observacion, estado
+) VALUES
+      (1, '2025-11-27 08:20:25.574509', 1, 'EMP-20251127-D0F6A', 'Solicitud inicial creada.', 'PENDIENTE'),
+      (1, '2025-11-27 08:20:53.460395', 2, 'EMP-20251127-D0F6A', 'Estado actualizado a APROBADO - OK', 'APROBADO');
+
+-- ================================================
+-- Datos de la tabla empresa_roles
+-- ================================================
+INSERT INTO empresa_roles (
+    empresa_id, role
+) VALUES
+    (1, 'ROLE_CLIENTE');

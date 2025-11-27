@@ -1,5 +1,6 @@
 package com.backend.avance1.service;
 
+import com.backend.avance1.dto.EmpresaRegistroDTO;
 import com.backend.avance1.dto.UserDTO;
 import com.backend.avance1.utils.TextUtils;
 import org.slf4j.Logger;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 @Service
-public class DniValidatorService implements DniValidatorServiceInterface {
+public class DniValidatorService {
 
     private static final Logger logger = LoggerFactory.getLogger(DniValidatorService.class);
     private final DniService dniService;
@@ -18,16 +19,16 @@ public class DniValidatorService implements DniValidatorServiceInterface {
         this.dniService = dniService;
     }
 
-    public boolean validarDatosReniec(UserDTO userDto) {
+    private boolean validarDatosReniecGenerico(String dni, String nombres, String apellidos, String tipo) {
         try {
-            Map<String, String> datosDni = dniService.consultarDni(userDto.getDniRuc());
+            Map<String, String> datosDni = dniService.consultarDni(dni);
 
             String nombresApi = datosDni.getOrDefault("nombres", "").trim();
             String apellidoPaterno = datosDni.getOrDefault("apellido_paterno", "").trim();
             String apellidoMaterno = datosDni.getOrDefault("apellido_materno", "").trim();
 
             String nombresCompletosApi = (nombresApi + " " + apellidoPaterno + " " + apellidoMaterno).trim();
-            String nombresCompletosUsuario = (userDto.getNombres() + " " + userDto.getApellidos()).trim();
+            String nombresCompletosUsuario = (nombres + " " + apellidos).trim();
 
             String normalizadoApi = TextUtils.normalizarTexto(nombresCompletosApi);
             String normalizadoUsuario = TextUtils.normalizarTexto(nombresCompletosUsuario);
@@ -35,7 +36,7 @@ public class DniValidatorService implements DniValidatorServiceInterface {
             boolean coincide = normalizadoApi.equals(normalizadoUsuario);
 
             System.out.println("\n========================================");
-            System.out.println("[VALIDACIÓN RENIEC - DNI " + userDto.getDniRuc() + "]");
+            System.out.println("[VALIDACIÓN RENIEC - DNI " + tipo + " " + dni + "]");
             if (coincide) {
                 System.out.println("✅ Coincide con RENIEC: " + nombresCompletosApi);
             } else {
@@ -48,8 +49,16 @@ public class DniValidatorService implements DniValidatorServiceInterface {
             return coincide;
 
         } catch (Exception e) {
-            logger.error("Error al validar DNI {}: {}", userDto.getDniRuc(), e.getMessage(), e);
+            logger.error("Error al validar DNI {}: {}", dni, e.getMessage(), e);
             throw new RuntimeException("Error al validar DNI: " + e.getMessage(), e);
         }
+    }
+
+    public boolean validarDatosReniec(UserDTO userDto) {
+        return validarDatosReniecGenerico(userDto.getDniRuc(), userDto.getNombres(), userDto.getApellidos(), "USUARIO");
+    }
+
+    public boolean validarDatosReniecEmpresa(EmpresaRegistroDTO empresaDto) {
+        return validarDatosReniecGenerico(empresaDto.getDni(), empresaDto.getNombres(), empresaDto.getApellidos(), "EMPRESA");
     }
 }
