@@ -502,6 +502,74 @@ En el proyecto se incluye el archivo **`RutasPrime.postman_collection.json`**, e
 
 ---
 
+## 📊 Sistema de Monitoreo con Prometheus y Grafana
+
+Este proyecto implementa un sistema de monitoreo basado en Prometheus y Grafana para supervisar el rendimiento del backend, incluyendo métricas como uso de CPU, memoria, consumo del heap, peticiones HTTP, latencias y estado general del servicio.
+
+### ⚙️ 1. Requisitos Previos
+Antes de iniciar, asegúrate de tener instalado:
+
+- Docker y Docker Compose (recomendado)
+- Acceso al proyecto backend con micrómetro habilitado
+- El backend debe contar con estas dependencias:
+```properties
+<!-- Micrometer + Prometheus -->
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+</dependency>
+
+<!-- Actuator -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+- En el `application.properties`:
+```properties
+management.endpoints.web.exposure.include=prometheus,health,info,metrics
+management.endpoint.prometheus.enabled=true
+management.metrics.tags.application=backend-service
+```
+
+### 📦 2. Instalación de Prometheus y Grafana (Docker Compose)
+- Crea un archivo `docker-compose.yml`
+- Crea un archivo `prometheus.yml`
+
+### ▶️ 3. Levantar el sistema de monitoreo
+```bash
+docker-compose up -d
+```
+
+### 📈 4. Configurar  / Crear Dashboard en Grafana
+- Ingresa a Grafana:
+```bash
+http://localhost:3000
+```
+- Ir a Connections → Data Sources → Add Data Source
+- Seleccionar Prometheus
+- Configurar URL:
+```bash
+http://prometheus:9090
+```
+- En Grafana: Create → Import
+- Seleccionar la fuente de datos Prometheus
+- Métricas que podrás ver:
+    - Uso de CPU del backend
+    - Consumo de RAM y Heap
+    - GC (Garbage Collector)
+    - Promedio de latencia por endpoint 
+    - Número de peticiones por ruta 
+    - Errores 4xx / 5xx 
+    - Threads activos 
+    - Tiempo de respuesta promedio
+
+### 🛑 5. Detener monitoreo
+```bash
+docker-compose down
+```
+---
+
 ## 🌱 Comandos Git básicos
 
 ### Clonar el proyecto
