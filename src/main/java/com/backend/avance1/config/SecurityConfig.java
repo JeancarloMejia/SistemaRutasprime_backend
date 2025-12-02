@@ -39,56 +39,78 @@ public class SecurityConfig {
                                 "/api/auth/public/**",
                                 "/api/contact",
                                 "/api/contact/",
-                                "/api/contact/**",
                                 "/api/archivos/**",
                                 "/api/empresa/register",
                                 "/api/empresa/login",
-                                "/api/empresa/profile"
+                                "/api/pagos/**",
+                                "/api/viajes/activo",          // NUEVO: Obtener viaje activo (público)
+                                "/api/viajes/historial",       // NUEVO: Historial de viajes (público)
+                                "/api/viajes/{id}",            // NUEVO: Obtener viaje por ID (público)
+                                "/api/viajes/{id}/cancelar",   // NUEVO: Cancelar viaje (público)
+                                "/api/viajes/{id}/estado",      // NUEVO: Actualizar estado (público)
+                                "/api/driver/available-trips",
+                                "/api/driver/accept-trip",
+                                "/api/driver/active-trip",
+                                "/api/driver/update-status"
                         ).permitAll()
 
-                        // Auth admin
                         .requestMatchers("/api/auth/admin/login").permitAll()
                         .requestMatchers("/api/auth/admin/**").hasRole("SUPERADMIN")
 
-                        // Contact
                         .requestMatchers(
                                 "/api/contact/reply",
                                 "/api/contact/all",
                                 "/api/contact/{code}"
                         ).hasAnyRole("ADMIN", "SUPERADMIN")
 
-                        // Conductor - Cliente
                         .requestMatchers("/api/conductor/apply", "/api/conductor/status")
                         .hasRole("CLIENTE")
 
-                        // Conductor - Admin
                         .requestMatchers(
                                 "/api/conductor/verify/**",
                                 "/api/conductor/historial/**",
                                 "/api/conductor/list"
                         ).hasAnyRole("ADMIN", "SUPERADMIN")
 
-                        // Empresa - Admin
                         .requestMatchers(
                                 "/api/empresa/verify/**",
                                 "/api/empresa/list",
                                 "/api/empresa/{id}",
-                                "/api/empresa/historial/**"
-                        ).hasAnyRole("ADMIN", "SUPERADMIN")
+                                "/api/empresa/historial/**",
+                                "/api/empresa/update/**",
+                                "/api/empresa/delete/**",
+                                "/api/empresa/profile"
+                        ).hasAnyRole("ADMIN", "SUPERADMIN", "CLIENTE")
 
-                        // User
                         .requestMatchers("/api/user/profile", "/api/user/update", "/api/user/change-password")
                         .authenticated()
+
                         .requestMatchers(
                                 "/api/user/clientes",
                                 "/api/user/conductores-clientes",
                                 "/api/user/{id}",
-                                "/api/user/export/excel"
+                                "/api/user/export/excel",
+                                "/api/user/delete/**"
                         ).hasAnyRole("ADMIN", "SUPERADMIN")
+
                         .requestMatchers("/api/user/admins")
                         .hasRole("SUPERADMIN")
 
-                        // Admin y Super
+                        // Endpoints de viajes con autenticación (si decides usarlos después)
+                        .requestMatchers(
+                                "/api/viajes/solicitar",
+                                "/api/viajes/cliente/activo",
+                                "/api/viajes/cliente/historial"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                "/api/viajes/conductor/disponible",
+                                "/api/viajes/conductor/historial"
+                        ).hasRole("CONDUCTOR")
+
+                        .requestMatchers("/api/viajes/admin/todos")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
+
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
                         .requestMatchers("/api/super/**").hasRole("SUPERADMIN")
 
@@ -116,6 +138,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
+                "http://localhost:5174",
                 "https://tudominio.com"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
