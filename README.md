@@ -623,6 +623,7 @@ git push origin main
 ## 💡 Notas finales
 👉 [🎥 Video explicativo sobre las pruebas TDD aplicadas en el proyecto](https://www.youtube.com/watch?v=nliaTZWPBfA)
 
+👉 [🎥 Video explicativo sobre Prometheus + Grafana aplicadas en el proyecto](https://youtu.be/eUKPnPsqMF4)
 - El backend está diseñado para integrarse directamente con el **frontend de RutasPrime**.
 - Para continuar con la interfaz de usuario, revisa el repo del frontend aquí:
 
