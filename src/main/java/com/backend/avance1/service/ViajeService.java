@@ -10,10 +10,14 @@ import com.backend.avance1.repository.UserRepository;
 import com.backend.avance1.repository.ViajeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -24,6 +28,8 @@ public class ViajeService {
     private final ViajeRepository viajeRepository;
     private final UserRepository userRepository;
     private final ConductorInfoRepository conductorInfoRepository;
+    private final PdfService pdfService;
+    private final MailService mailService;
 
     @Transactional
     public Viaje crearViaje(Viaje viaje) {
@@ -133,6 +139,44 @@ public class ViajeService {
         }
 
         viaje.setEstado(nuevoEstado);
-        return viajeRepository.save(viaje);
+        Viaje viajeActualizado = viajeRepository.save(viaje);
+
+        if (nuevoEstado == EstadoViaje.COMPLETADO) {
+            try {
+                enviarBoletaPorEmail(viajeActualizado);
+            } catch (Exception e) {
+                log.error("Error al enviar boleta por email para viaje {}: {}", viajeId, e.getMessage());
+            }
+        }
+
+        return viajeActualizado;
+    }
+
+    private void enviarBoletaPorEmail(Viaje viaje) {
+        try {
+            log.info("Generando y enviando boleta para viaje {}", viaje.getId());
+
+            File pdfFile = pdfService.generarBoletaViaje(viaje);
+            FileSystemResource pdfResource = new FileSystemResource(pdfFile);
+
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("nombre", viaje.getNombre());
+            variables.put("apellido", viaje.getApellido());
+
+            mailService.enviarCorreoHtmlConAdjuntos(
+                    viaje.getEmailCliente(),
+                    "Boleta de Viaje #" + viaje.getId() + " - Viaje Completado",
+                    "boleta-viaje.html",
+                    variables,
+                    new FileSystemResource[]{pdfResource}
+            );
+
+            pdfFile.delete();
+
+            log.info("Boleta enviada exitosamente a {}", viaje.getEmailCliente());
+        } catch (Exception e) {
+            log.error("Error al enviar boleta: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al enviar boleta por email", e);
+        }
     }
 }

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Boleta de Viaje</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            text-align: center;
+            padding: 40px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2a9d8f;
+        }
+        p {
+            font-size: 16px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+        .footer img {
+            display: block;
+            margin: 10px auto 0;
+            width: 120px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>¡Viaje Completado! 🎉</h1>
+    <p>Hola <b>{{nombre}} {{apellido}}</b>, tu viaje ha finalizado exitosamente.</p>
+    <p>Adjunto encontrarás la boleta con todos los detalles del servicio.</p>
+    <br>
+    <p><b>Gracias por confiar en nosotros. ¡Hasta pronto!</b></p>
+    <div class="footer">
+        &copy; 2025 Rutas Prime. Todos los derechos reservados.
+        <img src="cid:logoImage" alt="Logo">
+    </div>
+</div>
+</body>
+</html>
