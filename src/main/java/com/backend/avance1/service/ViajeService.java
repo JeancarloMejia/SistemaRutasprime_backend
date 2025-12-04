@@ -1,7 +1,12 @@
 package com.backend.avance1.service;
 
+import com.backend.avance1.entity.ConductorInfo;
+import com.backend.avance1.entity.EstadoVerificacion;
 import com.backend.avance1.entity.EstadoViaje;
+import com.backend.avance1.entity.User;
 import com.backend.avance1.entity.Viaje;
+import com.backend.avance1.repository.ConductorInfoRepository;
+import com.backend.avance1.repository.UserRepository;
 import com.backend.avance1.repository.ViajeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +22,8 @@ import java.util.Optional;
 public class ViajeService {
 
     private final ViajeRepository viajeRepository;
+    private final UserRepository userRepository;
+    private final ConductorInfoRepository conductorInfoRepository;
 
     @Transactional
     public Viaje crearViaje(Viaje viaje) {
@@ -56,8 +63,6 @@ public class ViajeService {
         return viajeRepository.save(viaje);
     }
 
-    // MÉTODOS PARA CONDUCTORES
-
     public List<Viaje> obtenerViajesDisponibles() {
         log.info("Buscando viajes disponibles para conductores");
         return viajeRepository.findViajesPendientes();
@@ -74,8 +79,33 @@ public class ViajeService {
             throw new RuntimeException("El viaje ya no está disponible");
         }
 
+        User conductor = userRepository.findById(conductorId)
+                .orElseThrow(() -> new RuntimeException("Usuario conductor no encontrado con id: " + conductorId));
+
+        ConductorInfo conductorInfo = conductorInfoRepository.findByUserId(conductorId)
+                .orElseThrow(() -> new RuntimeException("Información del conductor no encontrada para user id: " + conductorId));
+
+        if (conductorInfo.getEstado() != EstadoVerificacion.APROBADO) {
+            throw new RuntimeException("El conductor no está verificado. Estado: " + conductorInfo.getEstado());
+        }
+
         viaje.setConductorId(conductorId);
+        viaje.setConductorNombres(conductor.getNombres());
+        viaje.setConductorApellidos(conductor.getApellidos());
+        viaje.setConductorCelular(conductor.getCelular());
+        viaje.setConductorEmail(conductor.getEmail());
+        viaje.setVehiculoPlaca(conductorInfo.getPlaca());
+        viaje.setVehiculoMarca(conductorInfo.getMarca());
+        viaje.setVehiculoColor(conductorInfo.getColor());
+        viaje.setVehiculoAnio(conductorInfo.getAnioFabricacion());
         viaje.setEstado(EstadoViaje.CONDUCTOR_ASIGNADO);
+
+        log.info("Conductor asignado exitosamente: {} {} - Vehículo: {} {} {}",
+                conductor.getNombres(),
+                conductor.getApellidos(),
+                conductorInfo.getMarca(),
+                conductorInfo.getColor(),
+                conductorInfo.getPlaca());
 
         return viajeRepository.save(viaje);
     }
